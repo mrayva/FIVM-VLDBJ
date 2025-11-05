@@ -1,9 +1,9 @@
-IMPORT DTREE FROM FILE 'tpch_query10.txt';
+IMPORT DTREE FROM FILE 'tpch_query10_vo1.txt';
 
 CREATE STREAM LINEITEM (
         orderkey         INT,
-        l_partkey        INT,
-        l_suppkey        INT,
+        partkey        INT,
+        suppkey        INT,
         l_linenumber     INT,
         l_quantity       DECIMAL,
         l_extendedprice  DECIMAL,
@@ -52,7 +52,7 @@ CREATE STREAM CUSTOMER (
 CREATE TABLE NATION (
         nationkey      INT,
         n_name         CHAR(25),
-        n_regionkey    INT,
+        regionkey    INT,
         n_comment      VARCHAR(152)
     )
   FROM FILE './datasets/tpch/nation.csv'
