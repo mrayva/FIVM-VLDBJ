@@ -2,7 +2,8 @@
 
 WORK_DIR="/home/user/zhang/FIVM-static-dynamic/examples/"
 
-queries=("tpch_query03_vo1" "tpch_query03_vo2")
+# queries=("tpch_query03_vo1" "tpch_query03_vo2")
+queries=("tpch_query03_vo1" "tpch_query03_vo2" "tpch_query03_nopred_vo1" "tpch_query03_nopred_vo2")
 
 dataset=$1
 if [ -z "$dataset" ]; then
@@ -13,7 +14,6 @@ fi
 experiment_name="static"
 method="FIVM"
 dataset_versions=("tpch10" "tpch_unordered10" "jcch10" "jcch_unordered10")
-# dataset_versions=("jcch1")
 
 
 
