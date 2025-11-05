@@ -290,6 +290,85 @@ def tpch_query_1():
     return (root, relations, free_vars)
 
 
+def tpch_query_3_vo1():
+    orderkey = VariableOrderNode("orderkey")
+    custkey = VariableOrderNode("custkey")
+
+    root = orderkey
+    orderkey.add_child(custkey)
+
+    relations = [tpch.Orders, tpch.Customer, tpch.Lineitem]
+
+    free_vars = {}
+
+    return (root, relations, free_vars)
+
+
+def tpch_query_3_vo2():
+    orderkey = VariableOrderNode("orderkey")
+    custkey = VariableOrderNode("custkey")
+
+    root = custkey
+    custkey.add_child(orderkey)
+
+    relations = [tpch.Orders, tpch.Customer, tpch.Lineitem]
+
+    free_vars = {}
+
+    return (root, relations, free_vars)
+
+
+def tpch_query_10_vo1():
+    orderkey = VariableOrderNode("orderkey")
+    custkey = VariableOrderNode("custkey")
+    nationkey = VariableOrderNode("nationkey")
+
+    # orderkey -> custkey -> nationkey
+    root = orderkey
+    orderkey.add_child(custkey)
+    custkey.add_child(nationkey)
+
+    relations = [tpch.Orders, tpch.Customer, tpch.Lineitem, tpch.Nation]
+
+    free_vars = {}
+
+    return (root, relations, free_vars)
+
+
+def tpch_query_10_vo2():
+    orderkey = VariableOrderNode("orderkey")
+    custkey = VariableOrderNode("custkey")
+    nationkey = VariableOrderNode("nationkey")
+
+    # nationkey -> custkey -> orderkey
+    root = nationkey
+    nationkey.add_child(custkey)
+    custkey.add_child(orderkey)
+
+    relations = [tpch.Orders, tpch.Customer, tpch.Lineitem, tpch.Nation]
+
+    free_vars = {}
+
+    return (root, relations, free_vars)
+
+
+def tpch_query_10_vo3():
+    orderkey = VariableOrderNode("orderkey")
+    custkey = VariableOrderNode("custkey")
+    nationkey = VariableOrderNode("nationkey")
+
+    # custkey -> nationkey -> orderkey
+    root = nationkey
+    nationkey.add_child(custkey)
+    custkey.add_child(orderkey)
+
+    relations = [tpch.Orders, tpch.Customer, tpch.Lineitem, tpch.Nation]
+
+    free_vars = {}
+
+    return (root, relations, free_vars)
+
+
 def main(args):
 
     is_sql = args[0] if len(args) > 0 else "vo"
@@ -298,51 +377,17 @@ def main(args):
     # root, relations, free_vars = jobs_query_1_vo3()
     # root, relations, free_vars = jobs_query_1()
 
-    root, relations, free_vars = tpch_query_1()
+    # root, relations, free_vars = tpch_query_1()
+
+    # root, relations, free_vars = tpch_query_3_vo1()
+    root, relations, free_vars = tpch_query_3_vo2()
 
     if is_sql == "sql":
-        res = generate_sql_stream_text(
-            relations, root, free_vars, "1", "imdb", "RingFactorizedRelation"
-        )
+        res = generate_sql_stream_text(relations, root, free_vars, "1", "imdb", "RingFactorizedRelation")
     else:
         res = generate_txt(relations, root, free_vars)
 
     visualize_node(root)
-
-    # query_group = args[0] # prefix of the query name
-    # q = args[1] # query name
-    # path = args[2] # path to dataset
-    # is_sql = args[3]
-    # ring = args[4]
-    # # if args has 5 elements, then we are redirecting the output to a file
-    # redirect = len(args) == 6
-
-    # path_len = int(q.split("-")[0][1:])
-    # # path_len = int(q[1:])
-
-    # root, relations, free_vars = generate_path_query(path_len)
-
-    # res = ""
-
-    # ring_txt = ""
-    # if ring == "factorized":
-    #     ring_txt = "RingFactorizedRelation"
-    # elif ring == "listing":
-    #     ring_txt = "RingRelation"
-
-    # if is_sql == "sql":
-    #     res = generate_sql_text(relations, root, free_vars, query_group, q, path, ring_txt)
-    # elif is_sql == "vo":
-    #     res = generate_txt(relations, root, free_vars)
-    # elif is_sql == "app":
-    #     res = generate_application_text(relations, query_group, q, path)
-
-    # res += "\n"
-
-    # if not redirect:
-    #     visualize_node(root)
-
-    # return res
 
     pass
 

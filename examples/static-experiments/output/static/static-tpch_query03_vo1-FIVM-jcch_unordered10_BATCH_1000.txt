@@ -1,0 +1,114 @@
+-------------
+Loading input relations... 216751 ms
+  Lineitem (60000000) 
+  Orders (15000000) 
+  Customer (1500000) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams... Processed: 1000 (0.00%)    Batch time: 0 ms
+Processed: 766000 (1.00%)    Batch time: 76 ms
+Processed: 1531000 (2.00%)    Batch time: 96 ms
+Processed: 2296000 (3.00%)    Batch time: 86 ms
+Processed: 3061000 (4.00%)    Batch time: 129 ms
+Processed: 3826000 (5.00%)    Batch time: 85 ms
+Processed: 4591000 (6.00%)    Batch time: 83 ms
+Processed: 5356000 (7.00%)    Batch time: 178 ms
+Processed: 6121000 (8.00%)    Batch time: 155 ms
+Processed: 6886000 (9.00%)    Batch time: 94 ms
+Processed: 7651000 (10.00%)    Batch time: 97 ms
+Processed: 8416000 (11.00%)    Batch time: 232 ms
+Processed: 9181000 (12.00%)    Batch time: 101 ms
+Processed: 9946000 (13.00%)    Batch time: 246 ms
+Processed: 10711000 (14.00%)    Batch time: 97 ms
+Processed: 11476000 (15.00%)    Batch time: 98 ms
+Processed: 12241000 (16.00%)    Batch time: 100 ms
+Processed: 13006000 (17.00%)    Batch time: 101 ms
+Processed: 13771000 (18.00%)    Batch time: 113 ms
+Processed: 14536000 (19.00%)    Batch time: 159 ms
+Processed: 15301000 (20.00%)    Batch time: 309 ms
+Processed: 16066000 (21.00%)    Batch time: 101 ms
+Processed: 16831000 (22.00%)    Batch time: 102 ms
+Processed: 17596000 (23.00%)    Batch time: 104 ms
+Processed: 18361000 (24.00%)    Batch time: 109 ms
+Processed: 19126000 (25.00%)    Batch time: 112 ms
+Processed: 19891000 (26.00%)    Batch time: 418 ms
+Processed: 20656000 (27.00%)    Batch time: 100 ms
+Processed: 21421000 (28.00%)    Batch time: 101 ms
+Processed: 22186000 (29.00%)    Batch time: 107 ms
+Processed: 22951000 (30.00%)    Batch time: 112 ms
+Processed: 23716000 (31.00%)    Batch time: 105 ms
+Processed: 24481000 (32.00%)    Batch time: 105 ms
+Processed: 25246000 (33.00%)    Batch time: 106 ms
+Processed: 26011000 (34.00%)    Batch time: 107 ms
+Processed: 26776000 (35.00%)    Batch time: 110 ms
+Processed: 27541000 (36.00%)    Batch time: 231 ms
+Processed: 28306000 (37.00%)    Batch time: 101 ms
+Processed: 29071000 (38.00%)    Batch time: 546 ms
+Processed: 29836000 (39.00%)    Batch time: 102 ms
+Processed: 30601000 (40.00%)    Batch time: 101 ms
+Processed: 31366000 (41.00%)    Batch time: 105 ms
+Processed: 32131000 (42.00%)    Batch time: 111 ms
+Processed: 32896000 (43.00%)    Batch time: 94 ms
+Processed: 33661000 (44.00%)    Batch time: 94 ms
+Processed: 34426000 (45.00%)    Batch time: 94 ms
+Processed: 35191000 (46.00%)    Batch time: 97 ms
+Processed: 35956000 (47.00%)    Batch time: 120 ms
+Processed: 36721000 (48.00%)    Batch time: 100 ms
+Processed: 37486000 (49.00%)    Batch time: 101 ms
+Processed: 38251000 (50.00%)    Batch time: 102 ms
+Processed: 39016000 (51.00%)    Batch time: 103 ms
+Processed: 39781000 (52.00%)    Batch time: 105 ms
+Processed: 40546000 (53.00%)    Batch time: 786 ms
+Processed: 41311000 (54.00%)    Batch time: 132 ms
+Processed: 42076000 (55.00%)    Batch time: 111 ms
+Processed: 42841000 (56.00%)    Batch time: 108 ms
+Processed: 43606000 (57.00%)    Batch time: 109 ms
+Processed: 44371000 (58.00%)    Batch time: 113 ms
+Processed: 45136000 (59.00%)    Batch time: 115 ms
+Processed: 45901000 (60.00%)    Batch time: 116 ms
+Processed: 46666000 (61.00%)    Batch time: 117 ms
+Processed: 47431000 (62.00%)    Batch time: 129 ms
+Processed: 48196000 (63.00%)    Batch time: 118 ms
+Processed: 48961000 (64.00%)    Batch time: 119 ms
+Processed: 49726000 (65.00%)    Batch time: 120 ms
+Processed: 50491000 (66.00%)    Batch time: 120 ms
+Processed: 51256000 (67.00%)    Batch time: 122 ms
+Processed: 52021000 (68.00%)    Batch time: 124 ms
+Processed: 52786000 (69.00%)    Batch time: 124 ms
+Processed: 53551000 (70.00%)    Batch time: 143 ms
+Processed: 54316000 (71.00%)    Batch time: 126 ms
+Processed: 55081000 (72.00%)    Batch time: 128 ms
+Processed: 55846000 (73.00%)    Batch time: 129 ms
+Processed: 56611000 (74.00%)    Batch time: 133 ms
+Processed: 57376000 (75.00%)    Batch time: 135 ms
+Processed: 58141000 (76.00%)    Batch time: 131 ms
+Processed: 58906000 (77.00%)    Batch time: 132 ms
+Processed: 59671000 (78.00%)    Batch time: 132 ms
+Processed: 60436000 (79.00%)    Batch time: 135 ms
+Processed: 61201000 (80.00%)    Batch time: 132 ms
+Processed: 61966000 (81.00%)    Batch time: 133 ms
+Processed: 62731000 (82.00%)    Batch time: 136 ms
+Processed: 63496000 (83.00%)    Batch time: 137 ms
+Processed: 64261000 (84.00%)    Batch time: 136 ms
+Processed: 65026000 (85.00%)    Batch time: 134 ms
+Processed: 65791000 (86.00%)    Batch time: 135 ms
+Processed: 66556000 (87.00%)    Batch time: 135 ms
+Processed: 67321000 (88.00%)    Batch time: 137 ms
+Processed: 68086000 (89.00%)    Batch time: 136 ms
+Processed: 68851000 (90.00%)    Batch time: 135 ms
+Processed: 69616000 (91.00%)    Batch time: 135 ms
+Processed: 70381000 (92.00%)    Batch time: 136 ms
+Processed: 71146000 (93.00%)    Batch time: 136 ms
+Processed: 71911000 (94.00%)    Batch time: 136 ms
+Processed: 72676000 (95.00%)    Batch time: 136 ms
+Processed: 73441000 (96.00%)    Batch time: 136 ms
+Processed: 74206000 (97.00%)    Batch time: 136 ms
+Processed: 74971000 (98.00%)    Batch time: 137 ms
+Processed: 75736000 (99.00%)    Batch time: 137 ms
+Processed: 76500000 (100.00%)    Batch time: 136 ms
+13699 ms
+5. On end of processing... 0 ms
+    Run: 0    Processed: 76500000    Skipped: 0    Execution time: 13700 ms    Batch size: 1000
+-------------

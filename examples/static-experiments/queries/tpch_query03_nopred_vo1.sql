@@ -2,12 +2,12 @@
 --   ORDER BY (ignored)
 --   LIMIT    (ignored)
 
-IMPORT DTREE FROM FILE 'tpch_query03.txt';
+IMPORT DTREE FROM FILE 'tpch_query03_vo1.txt';
 
 CREATE STREAM LINEITEM (
         orderkey       INT,
-        l_partkey        INT,
-        l_suppkey        INT,
+        partkey        INT,
+        suppkey        INT,
         l_linenumber     INT,
         l_quantity       DECIMAL,
         l_extendedprice  DECIMAL,
@@ -43,7 +43,7 @@ CREATE STREAM CUSTOMER (
         custkey      INT,
         c_name         VARCHAR(25),
         c_address      VARCHAR(40),
-        c_nationkey    INT,
+        nationkey    INT,
         c_phone        CHAR(15),
         c_acctbal      DECIMAL,
         c_mktsegment   CHAR(10),
@@ -57,7 +57,4 @@ SELECT orderkey,
        o_shippriority,
        SUM(l_extendedprice * (1 - l_discount))
 FROM   CUSTOMER NATURAL JOIN ORDERS NATURAL JOIN LINEITEM
-WHERE  c_mktsegment = 'BUILDING'
-  AND  o_orderdate < DATE('1995-03-15')
-  AND  l_shipdate > DATE('1995-03-15')
 GROUP BY orderkey, o_orderdate, o_shippriority;
