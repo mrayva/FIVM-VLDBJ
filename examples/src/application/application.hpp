@@ -4,6 +4,7 @@
 #include "dispatcher.hpp"
 #include "relation.hpp"
 #include "stopwatch.hpp"
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -15,13 +16,15 @@ protected:
   Multiplexer static_multiplexer;
   Multiplexer dynamic_multiplexer;
   Stopwatch stream_start_time;
-  long cumulative_stream_time;
+  size_t total_dynamic_size;
 
   void init_relations();
 
   void load_relations();
 
   void clear_relations();
+
+  size_t get_total_dynamic_relation_size();
 
   void init_dispatchers(dbtoaster::data_t &data);
 
@@ -73,6 +76,16 @@ void Application::clear_relations() {
   relations.clear();
 }
 
+size_t Application::get_total_dynamic_relation_size() {
+  size_t total_size = 0;
+  for (auto &r : relations) {
+    if (!r->is_static()) {
+      total_size += r->size();
+    }
+  }
+  return total_size;
+}
+
 void Application::init_dispatchers(dbtoaster::data_t &data) {
   clear_dispatchers();
 
@@ -93,10 +106,16 @@ void Application::clear_dispatchers() {
 void Application::report_snapshot_elapsed_time(dbtoaster::data_t &data) {
   stream_start_time.stop();
   long elapsed_time = stream_start_time.elapsedTimeInMilliSeconds();
-  cumulative_stream_time += elapsed_time;
-  std::cout << "Processed: " << data.tN
-            << "    Elapsed time: " << cumulative_stream_time << " ms"
-            << std::endl;
+
+  // Calculate percentage processed
+  double percentage = 0.0;
+  if (total_dynamic_size > 0) {
+    percentage = (static_cast<double>(data.tN) / total_dynamic_size) * 100.0;
+  }
+
+  std::cout << "Processed: " << data.tN << " (" << std::fixed
+            << std::setprecision(2) << percentage << "%)"
+            << "    Batch time: " << elapsed_time << " ms" << std::endl;
   stream_start_time.restart();
 }
 
@@ -111,15 +130,20 @@ void Application::process_on_system_ready(dbtoaster::data_t &data) {
 }
 
 void Application::process_streams(dbtoaster::data_t &data) {
-  // Hardcoded snapshot interval: 10,000 tuples
-  const long SNAPSHOT_INTERVAL = 10000;
+  // Calculate snapshot interval as 1% of total dynamic relation size
+  size_t total_dynamic_size = get_total_dynamic_relation_size();
+  long SNAPSHOT_INTERVAL =
+      total_dynamic_size > 0 ? total_dynamic_size / 100 : 10000;
+  if (SNAPSHOT_INTERVAL == 0) {
+    SNAPSHOT_INTERVAL = 1; // Ensure at least 1 tuple interval
+  }
   process_streams_snapshot(data, SNAPSHOT_INTERVAL);
 }
 
 void Application::process_streams_snapshot(dbtoaster::data_t &data,
                                            long snapshot_interval) {
   long next_snapshot = 0;
-  cumulative_stream_time = 0;
+  total_dynamic_size = get_total_dynamic_relation_size();
   stream_start_time.restart();
 
   while (dynamic_multiplexer.has_next()) {
@@ -137,7 +161,6 @@ void Application::process_streams_snapshot(dbtoaster::data_t &data,
 }
 
 void Application::process_streams_no_snapshot(dbtoaster::data_t &data) {
-  cumulative_stream_time = 0;
   stream_start_time.restart();
   std::cout << "  " << data.tN << std::endl;
 
