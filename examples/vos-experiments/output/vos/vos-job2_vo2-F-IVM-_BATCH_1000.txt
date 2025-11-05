@@ -1,0 +1,17 @@
+-------------
+Loading input relations... 49000 ms
+  title (2528312) 
+  cast_info (36244344) 
+  name (4167491) 
+  movie_keyword (4523930) 
+  keyword (134170) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+21177 ms
+5. On end of processing... 
+	<V_keyword_id_CNTMK1>215765477	</V_keyword_id_CNTMK1>0 ms
+    Run: 0    Processed: 47598247    Skipped: 0    Execution time: 21177 ms    Batch size: 1000
+-------------

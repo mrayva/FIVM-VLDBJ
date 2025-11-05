@@ -2,6 +2,7 @@
 #define APPLICATION_TPCH_FQ1_FACTORIZED_JOIN_HPP
 
 #include "application_tpch_base.hpp"
+#include "stopwatch.hpp"
 
 void Application::on_snapshot(dbtoaster::data_t& data) {
     on_end_processing(data, false);
@@ -15,6 +16,8 @@ void Application::on_end_processing(dbtoaster::data_t& data, bool print_result) 
 
     cout << endl << "Enumerating factorized join result... " << endl;
 
+    Stopwatch stopwatch;
+
     // cout << "  sizeof(V_orderkey_LPPO1) = " << data.get_V_orderkey_LPPO1().store.size() << endl;
     // cout << "  sizeof(V_partkey_LPP1) = " << data.get_V_partkey_LPP1().count() << endl;
     // cout << "  sizeof(V_suppkey_LP1) = " << data.get_V_suppkey_LP1().count() << endl;
@@ -27,6 +30,10 @@ void Application::on_end_processing(dbtoaster::data_t& data, bool print_result) 
     size_t total_multiplicity = 0;
 
     const auto& v_orderkey_LPPO1 = data.get_V_orderkey_LPPO1();
+
+    stopwatch.restart();
+
+    print_result = false;
 
     // For each v_orderkey_LPPO1(orderkey)
     for (auto &t1 : v_orderkey_LPPO1.store) {
@@ -93,8 +100,11 @@ void Application::on_end_processing(dbtoaster::data_t& data, bool print_result) 
         }
     }
 
+    stopwatch.stop();
+
     cout << "Number of output tuples: " << output_size << endl;
     cout << "Total multiplicity: " << total_multiplicity << endl;
+    cout << "Elapsed time: " << stopwatch.elapsedTimeInMilliSeconds() << " ms" << endl;
 }
 
 #endif /* APPLICATION_TPCH_FQ1_FACTORIZED_JOIN_HPP */

@@ -1,0 +1,47 @@
+41 5
+0 suppkey int -1 {-1} 0
+1 orderkey int 0 {0,-1} 0
+2 o_orderdate string 1 {0,1,-1} 0
+3 o_comment string 2 {0,1,2,-1} 0
+4 o_clerk string 3 {0,1,2,3,-1} 0
+5 o_orderstatus char 4 {0,1,2,3,4,-1} 0
+6 o_totalprice double 5 {0,1,2,3,4,5,-1} 0
+7 custkey int 6 {0,1,2,3,4,5,6,-1} 0
+8 o_orderpriority string 7 {0,1,2,3,4,5,6,7,-1} 0
+9 o_shippriority int 8 {0,1,2,3,4,5,6,7,8,-1} 0
+10 l_quantity double 1 {0,1,-1} 0
+11 l_shipmode string 10 {0,1,10,-1} 0
+12 l_comment string 11 {0,1,10,11,-1} 0
+13 l_discount double 12 {0,1,10,11,12,-1} 0
+14 l_linestatus char 13 {0,1,10,11,12,13,-1} 0
+15 l_shipinstruct string 14 {0,1,14,10,11,12,13,-1} 0
+16 l_shipdate string 15 {0,1,10,11,12,13,14,15,-1} 0
+17 l_returnflag char 16 {0,1,10,11,12,13,14,15,16,-1} 0
+18 l_tax double 17 {0,1,10,11,12,13,14,15,16,17,-1} 0
+19 l_receiptdate string 18 {0,1,10,11,12,13,14,15,16,17,18,-1} 0
+20 l_commitdate string 19 {0,1,10,11,12,13,14,15,16,17,18,19,-1} 0
+21 l_linenumber int 20 {0,1,10,11,12,13,14,15,16,17,18,19,20,-1} 0
+22 l_extendedprice double 21 {0,1,10,11,12,13,14,15,16,17,18,19,20,21,-1} 0
+23 ps_availqty int 0 {0,-1} 0
+24 ps_comment string 23 {0,-1,23} 0
+25 ps_supplycost double 24 {0,24,-1,23} 0
+26 p_mfgr string 0 {0,-1} 0
+27 p_retailprice double 26 {0,26,-1} 0
+28 p_size int 27 {0,26,27,-1} 0
+29 p_name string 28 {0,26,27,28,-1} 0
+30 p_type string 29 {0,26,27,28,29,-1} 0
+31 p_container string 30 {0,30,26,27,28,29,-1} 0
+32 p_brand string 31 {0,30,26,27,28,29,-1,31} 0
+33 p_comment string 32 {0,32,-1,26,27,28,29,30,31} 0
+34 s_nationkey int 0 {0,-1} 0
+35 s_address string 34 {0,34,-1} 0
+36 s_comment string 35 {0,34,35,-1} 0
+37 s_acctbal double 36 {0,34,35,36,-1} 0
+38 s_name string 37 {0,34,35,36,37,-1} 0
+39 s_phone string 38 {0,34,35,36,37,38,-1} 0
+ORDERS 9 orderkey,custkey,o_orderstatus,o_totalprice,o_orderdate,o_orderpriority,o_clerk,o_shippriority,o_comment
+LINEITEM 22 orderkey,partkey,suppkey,l_linenumber,l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment
+PARTSUPP 25 partkey,suppkey,ps_availqty,ps_supplycost,ps_comment
+PART 33 partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
+SUPPLIER 39 suppkey,s_name,s_address,s_nationkey,s_phone,s_acctbal,s_comment
+

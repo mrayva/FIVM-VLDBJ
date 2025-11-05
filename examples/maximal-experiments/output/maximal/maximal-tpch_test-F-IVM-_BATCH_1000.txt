@@ -1,0 +1,16 @@
+-------------
+Loading input relations... 200932 ms
+  Lineitem (59986052) 
+  Orders (15000000) 
+  Part (2000000) 
+  Partsupp (8000000) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+46088 ms
+5. On end of processing... 
+	<V_jv1_LPPO1>59986052	</V_jv1_LPPO1>0 ms
+    Run: 0    Processed: 84986052    Skipped: 0    Execution time: 46088 ms    Batch size: 1000
+-------------

@@ -1,0 +1,17 @@
+-------------
+Loading input relations... 7196 ms
+  title (2528312) 
+  company_type (4) 
+  info_type (113) 
+  movie_companies (2609129) 
+  movie_info_idx (1380035) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+1288 ms
+5. On end of processing... 
+	<V_movie_id_CMIMT1>4073078	</V_movie_id_CMIMT1>0 ms
+    Run: 0    Processed: 6517593    Skipped: 0    Execution time: 1288 ms    Batch size: 1000
+-------------

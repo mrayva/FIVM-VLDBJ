@@ -1,0 +1,20 @@
+-------------
+Loading input relations... 190431 ms
+  Lineitem (59986052) 
+  Orders (15000000) 
+  Part (2000000) 
+  Partsupp (8000000) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+202752 ms
+5. On end of processing... 
+Enumerating factorized join result... 
+Number of output tuples: 59986052
+Total multiplicity: 59986052
+Elapsed time: 129747 ms
+129747 ms
+    Run: 0    Processed: 84986052    Skipped: 0    Execution time: 332499 ms    Batch size: 1000
+-------------

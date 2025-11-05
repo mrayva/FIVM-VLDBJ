@@ -1,0 +1,68 @@
+IMPORT DTREE FROM FILE 'tpch_test.txt';
+
+CREATE STREAM PART (
+    jv2 int,
+    PART_P_NAME string,
+    PART_P_MFGR string,
+    PART_P_BRAND string,
+    PART_P_TYPE string,
+    PART_P_SIZE int,
+    PART_P_CONTAINER string,
+    PART_P_RETAILPRICE DOUBLE,
+    PART_P_COMMENT string
+)
+FROM
+    FILE 'part.dat' LINE DELIMITED CSV(delimiter := '|');
+
+CREATE STREAM PARTSUPP (
+    jv2 int,
+    jv3 int,
+    PARTSUPP_PS_AVAILQTY int,
+    PARTSUPP_PS_SUPPLYCOST DOUBLE,
+    PARTSUPP_PS_COMMENT string
+)
+FROM
+    FILE 'partsupp.dat' LINE DELIMITED CSV(delimiter := '|');
+
+CREATE STREAM ORDERS (
+    jv1 int,
+    ORDERS_O_CUSTKEY int,
+    ORDERS_O_ORDERSTATUS string,
+    ORDERS_O_TOTALPRICE DOUBLE,
+    ORDERS_O_ORDERDATE DATE,
+    ORDERS_O_ORDERPRIORITY string,
+    ORDERS_O_CLERK string,
+    ORDERS_O_SHIPPRIORITY int,
+    ORDERS_O_COMMENT string
+)
+FROM
+    FILE 'orders.dat' LINE DELIMITED CSV(delimiter := '|');
+
+CREATE STREAM LINEITEM (
+    jv1 int,
+    jv2 int,
+    jv3 int,
+    LINEITEM_L_LINENUMBER int,
+    LINEITEM_L_QUANTITY DOUBLE,
+    LINEITEM_L_EXTENDEDPRICE DOUBLE,
+    LINEITEM_L_DISCOUNT DOUBLE,
+    LINEITEM_L_TAX DOUBLE,
+    LINEITEM_L_RETURNFLAG string,
+    LINEITEM_L_LINESTATUS string,
+    LINEITEM_L_SHIPDATE DATE,
+    LINEITEM_L_COMMITDATE DATE,
+    LINEITEM_L_RECEIPTDATE DATE,
+    LINEITEM_L_SHIPINSTRUCT string,
+    LINEITEM_L_SHIPMODE string,
+    LINEITEM_L_COMMENT string
+)
+FROM
+    FILE 'lineitem.dat' LINE DELIMITED CSV(delimiter := '|');
+
+SELECT
+    SUM(1)
+FROM
+    part NATURAL
+    JOIN partsupp NATURAL
+    JOIN orders NATURAL
+    JOIN lineitem;

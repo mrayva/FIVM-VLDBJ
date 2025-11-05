@@ -1,0 +1,23 @@
+-------------
+Loading input relations... 154753 ms
+  Lineitem (59986052) 
+  Orders (15000000) 
+  Part (2000000) 
+  Partsupp (8000000) 
+  Supplier (100000) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+11976 ms
+5. On end of processing... Computation time: 6555 ms
+
+	<V_orderkey_LPSPO1>59986052	</V_orderkey_LPSPO1>6555 ms
+    Run: 0    Processed: 85086052    Skipped: 0    Execution time: 18531 ms    Batch size: 1000
+-------------
+
+Throughput:
+85086052/11976 = 7100.0 tuples/s
+
+Time to answer: 6555 ms

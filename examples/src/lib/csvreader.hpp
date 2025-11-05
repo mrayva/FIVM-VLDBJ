@@ -31,7 +31,7 @@ class CSVAdaptor {
             std::string cell;
 
             while (std::getline(lineStream, cell, delimiter)) {
-                // std::cout << cell << std::endl;
+                /* std::cout << cell << std::endl; */
                 // FIXME: this is a hack to handle empty cells
                 if (cell.empty()) {
                     data.push_back("-1");
@@ -71,13 +71,13 @@ void readFromFile(std::vector<T>& data, const std::string& path, char delimiter)
     CSVAdaptor row(delimiter);
 
     while (file >> row) {
-        // if (path.find("movie_info_idx") != std::string::npos) {
-        //     std::cout << "row.size() = " << row.size() << std::endl;
-        //     for (size_t i = 0; i < row.size(); i++) {
-        //         std::cout << row[i] << " ";
-        //     }
-        //     std::cout << std::endl;
-        // }
+        /* if (path.find("cast_info") != std::string::npos) { */
+        /*     std::cout << "row.size() = " << row.size() << std::endl; */
+        /*     for (size_t i = 0; i < row.size(); i++) { */
+        /*         std::cout << row[i] << " "; */
+        /*     } */
+        /*     std::cout << std::endl; */
+        /* } */
 
         T tmp(row.data, 1L);
 

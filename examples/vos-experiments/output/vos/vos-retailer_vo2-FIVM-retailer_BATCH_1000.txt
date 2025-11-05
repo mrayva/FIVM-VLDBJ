@@ -1,0 +1,17 @@
+-------------
+Loading input relations... 57476 ms
+  Inventory (84055817) 
+  Location (1298) 
+  Census (1285) 
+  Item (5618) 
+  Weather (152319) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+49700 ms
+5. On end of processing... 
+	<V_ksn_LCIWI1>84055817	</V_ksn_LCIWI1>0 ms
+    Run: 0    Processed: 84216337    Skipped: 0    Execution time: 49700 ms    Batch size: 1000
+-------------

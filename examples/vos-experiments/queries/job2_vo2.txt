@@ -1,0 +1,37 @@
+30 5
+0 keyword_id int -1 {} 0
+1 movie_id int 0 {0} 0
+2 person_id int 1 {0,1} 0
+3 ci_nr_order string 2 {0,1,2} 0
+4 ci_id int 3 {0,1,2,3} 0
+5 person_role_id int 4 {0,1,2,3,4} 0
+6 role_id int 5 {0,1,2,3,4,5} 0
+7 ci_note string 6 {0,1,2,3,4,5,6} 0
+8 n_imdb_index string 2 {0,1,2} 0
+9 n_imdb_id string 8 {0,1,2,8} 0
+10 n_name_pcode_nf string 9 {0,1,2,8,9} 0
+11 n_name_pcode_cf string 10 {0,1,2,8,9,10} 0
+12 name string 11 {0,1,2,8,9,10,11} 0
+13 n_gender string 12 {0,1,2,8,9,10,11,12} 0
+14 n_md5sum string 13 {0,1,2,8,9,10,11,12,13} 0
+15 n_surname_pcode string 14 {0,1,2,8,9,10,11,12,13,14} 0
+16 t_title string 1 {0,1} 0
+17 t_episode_nr int 16 {0,1,16} 0
+18 t_series_years string 17 {0,1,16,17} 0
+19 t_phonetic_code string 18 {0,1,16,17,18} 0
+20 t_md5sum string 19 {0,1,16,17,18,19} 0
+21 kind_id int 20 {0,1,16,17,18,19,20} 0
+22 t_season_nr int 21 {0,1,16,17,18,19,20,21} 0
+23 t_imdb_index string 22 {0,1,16,17,18,19,20,21,22} 0
+24 imdb_id int 23 {0,1,16,17,18,19,20,21,22,23} 0
+25 t_episode_of_id int 24 {0,1,16,17,18,19,20,21,22,23,24} 0
+26 t_production_year int 25 {0,1,16,17,18,19,20,21,22,23,24,25} 0
+27 mk_id int 1 {0,1} 0
+28 k_phonetic_code string 0 {0} 0
+29 keyword string 28 {0,28} 0
+TITLE 26 movie_id,t_title,t_imdb_index,kind_id,t_production_year,imdb_id,t_phonetic_code,t_episode_of_id,t_season_nr,t_episode_nr,t_series_years,t_md5sum
+CAST_INFO 7 ci_id,person_id,movie_id,person_role_id,ci_note,ci_nr_order,role_id
+NAME 15 person_id,name,n_imdb_index,n_imdb_id,n_gender,n_name_pcode_cf,n_name_pcode_nf,n_surname_pcode,n_md5sum
+MOVIE_KEYWORD 27 mk_id,movie_id,keyword_id
+KEYWORD 29 keyword_id,keyword,k_phonetic_code
+

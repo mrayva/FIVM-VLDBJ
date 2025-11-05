@@ -1,0 +1,14 @@
+-------------
+Loading input relations... 19329 ms
+  Lineitem (6001215) 
+  Orders (1500000) 
+  Customer (150000) 
+-------------
+1. On begin of processing... 0 ms
+2. Processing tables... 0 ms
+3. On system ready... 0 ms
+4. Processing streams...   0
+559 ms
+5. On end of processing... 0 ms
+    Run: 0    Processed: 7651215    Skipped: 0    Execution time: 559 ms    Batch size: 1000
+-------------

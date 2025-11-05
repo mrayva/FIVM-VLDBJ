@@ -1,4 +1,3 @@
-
 class Relation:
     def __init__(self, name: str, variables: dict[str, str], private_keys: set[str]):
         self.name: str = name.upper()
@@ -10,7 +9,7 @@ class Relation:
     def var_type(self):
         s = ""
         for var in self.variables:
-            s += f"\"{var}\": \"{self.variables[var]}\"\n"
+            s += f'"{var}": "{self.variables[var]}"\n'
         return s
 
     def __hash__(self):
@@ -37,7 +36,9 @@ def compute_descendants(node):
 
 
 class VariableOrderNode:
-    def __init__(self, name: str, data_type: str = "int", all_non_join_below: bool = False):
+    def __init__(
+        self, name: str, data_type: str = "int", all_non_join_below: bool = False
+    ):
         self.name: str = name
         self.children: "List[VariableOrderNode]" = []
         # add descendants attribute
@@ -118,7 +119,8 @@ class VariableOrderNode:
                 descendants.append(iterator)
 
             descendants_types = ",".join(
-                [path_sql_type_table[x.name] for x in descendants])
+                [path_sql_type_table[x.name] for x in descendants]
+            )
             descendants_names = ",".join([x.name for x in descendants])
             # generate the SQL
             s = f"\t[lift<{self.id}>: {ring_txt}<[{self.id}, {descendants_types}]>]({descendants_names}) *\n"
@@ -138,40 +140,49 @@ class VariableOrderNode:
 def map_data_type(data_type: str):
     if data_type == "INT" or data_type == "int":
         return "int"
-    elif "CHAR" in data_type:
+    elif "CHAR" in data_type or "char" in data_type:
+        return "char"
+    elif "VARCHAR" in data_type or "string" in data_type:
         return "string"
-    elif data_type == "FLOAT" or data_type == "DECIMAL":
+    elif data_type == "FLOAT" or data_type == "DECIMAL" or data_type == "double":
         return "double"
+    elif data_type == "BYTE" or data_type == "byte":
+        return "byte"
     else:
         print(f"Unknown data type: {data_type}")
 
 
 # generate the variable order (d-tree file)
-def generate_txt(all_relations: "List[Relation]", root: "VariableOrderNode", free_variables: set[str]):
+def generate_txt(
+    all_relations: "List[Relation]", root: "VariableOrderNode", free_variables: set[str]
+):
     for relation in all_relations:
         iterator = root
         while True:
-            if set(iterator.child_variables()).isdisjoint(set(relation.variables.keys())):
+            if set(iterator.child_variables()).isdisjoint(
+                set(relation.variables.keys())
+            ):
                 # append the free variables to iterator to make sure they are on top of the bound variables
                 variables_to_add = set(relation.variables.keys()).difference(
-                    iterator.parent_variables().union({iterator.name}))
+                    iterator.parent_variables().union({iterator.name})
+                )
 
                 for variable in variables_to_add.intersection(free_variables):
-                    new_node = VariableOrderNode(
-                        variable, relation.variables[variable])
+                    new_node = VariableOrderNode(variable, relation.variables[variable])
                     iterator.add_child(new_node)
                     iterator = new_node
 
                 for variable in variables_to_add.difference(free_variables):
-                    new_node = VariableOrderNode(
-                        variable, relation.variables[variable])
+                    new_node = VariableOrderNode(variable, relation.variables[variable])
                     iterator.add_child(new_node)
                     iterator = new_node
                 relation.last_variable = iterator
                 break
             else:
                 for child in iterator.children:
-                    if not (set(child.child_variables()).union({child.name})).isdisjoint(set(relation.variables.keys())):
+                    if not (
+                        set(child.child_variables()).union({child.name})
+                    ).isdisjoint(set(relation.variables.keys())):
                         iterator = child
                         break
 
@@ -195,20 +206,29 @@ def compute_join_variables(relations):
     return join_vars
 
 
-def generate_sql_stream_text(all_relations: "List[Relation]", root: "VariableOrderNode", free_variables: set[str], q: str, path: str, ring_txt: str):
+def generate_sql_stream_text(
+    all_relations: "List[Relation]",
+    root: "VariableOrderNode",
+    free_variables: set[str],
+    q: str,
+    path: str,
+    ring_txt: str,
+):
     # join_variables = compute_join_variables(all_relations)
 
     for relation in all_relations:
         iterator = root
         while True:
-            if set(iterator.child_variables()).isdisjoint(set(relation.variables.keys())):
+            if set(iterator.child_variables()).isdisjoint(
+                set(relation.variables.keys())
+            ):
                 # append the free variables to iterator
                 variables_to_add = set(relation.variables.keys()).difference(
-                    iterator.parent_variables().union({iterator.name}))
+                    iterator.parent_variables().union({iterator.name})
+                )
 
                 for variable in variables_to_add.intersection(free_variables):
-                    new_node = VariableOrderNode(
-                        variable, relation.variables[variable])
+                    new_node = VariableOrderNode(variable, relation.variables[variable])
                     iterator.add_child(new_node)
                     iterator = new_node
                     iterator.all_non_join_below = True
@@ -216,12 +236,13 @@ def generate_sql_stream_text(all_relations: "List[Relation]", root: "VariableOrd
                 break
             else:
                 for child in iterator.children:
-                    if not (set(child.child_variables()).union({child.name})).isdisjoint(set(relation.variables.keys())):
+                    if not (
+                        set(child.child_variables()).union({child.name})
+                    ).isdisjoint(set(relation.variables.keys())):
                         iterator = child
                         break
 
     # visualize_node(root)
-
 
     s = f"IMPORT DTREE FROM FILE '{q}.txt';"
     s += "\n\n"
@@ -239,21 +260,31 @@ def generate_sql_stream_text(all_relations: "List[Relation]", root: "VariableOrd
     return s
 
 
-def generate_sql_text(all_relations: "List[Relation]", root: "VariableOrderNode", free_variables: set[str], query_group: str, q: str, path: str, ring_txt: str):
+def generate_sql_text(
+    all_relations: "List[Relation]",
+    root: "VariableOrderNode",
+    free_variables: set[str],
+    query_group: str,
+    q: str,
+    path: str,
+    ring_txt: str,
+):
 
     # join_variables = compute_join_variables(all_relations)
 
     for relation in all_relations:
         iterator = root
         while True:
-            if set(iterator.child_variables()).isdisjoint(set(relation.variables.keys())):
+            if set(iterator.child_variables()).isdisjoint(
+                set(relation.variables.keys())
+            ):
                 # append the free variables to iterator
                 variables_to_add = set(relation.variables.keys()).difference(
-                    iterator.parent_variables().union({iterator.name}))
+                    iterator.parent_variables().union({iterator.name})
+                )
 
                 for variable in variables_to_add.intersection(free_variables):
-                    new_node = VariableOrderNode(
-                        variable, relation.variables[variable])
+                    new_node = VariableOrderNode(variable, relation.variables[variable])
                     iterator.add_child(new_node)
                     iterator = new_node
                     iterator.all_non_join_below = True
@@ -261,12 +292,13 @@ def generate_sql_text(all_relations: "List[Relation]", root: "VariableOrderNode"
                 break
             else:
                 for child in iterator.children:
-                    if not (set(child.child_variables()).union({child.name})).isdisjoint(set(relation.variables.keys())):
+                    if not (
+                        set(child.child_variables()).union({child.name})
+                    ).isdisjoint(set(relation.variables.keys())):
                         iterator = child
                         break
 
     # visualize_node(root)
-
 
     s = f"IMPORT DTREE FROM FILE '{query_group}-{q}.txt';"
     s += "\n\n"
@@ -285,7 +317,7 @@ def generate_sql_text(all_relations: "List[Relation]", root: "VariableOrderNode"
 
     s += root.generate_sql(ring_txt)
     # remove the last *
-    s = s[::-1].replace('*', "", 1)[::-1]
+    s = s[::-1].replace("*", "", 1)[::-1]
     s += ")\nFROM "
     s += " NATURAL JOIN ".join([rel.name for rel in all_relations])
     s += ";\n\n"
@@ -304,12 +336,15 @@ def generate_relation_sql_text(relation: "Relation", path: str):
     s += f") \nFROM FILE './datasets/{path}/{relation.name}.csv' \nLINE DELIMITED CSV (delimiter := '|');\n"
     return s
 
-def generate_application_text(all_relations: "List[Relation]", query_group: str, q: str, path: str):
+
+def generate_application_text(
+    all_relations: "List[Relation]", query_group: str, q: str, path: str
+):
 
     s = f"#ifndef APPLICATION_{query_group.upper()}_{q.upper()}_BASE_HPP\n"
     s += f"#define APPLICATION_{query_group.upper()}_{q.upper()}_BASE_HPP\n\n"
-    s += "#include \"../application.hpp\"\n\n"
-    s += f"const string dataPath = \"data/{path}\";\n\n"
+    s += '#include "../application.hpp"\n\n'
+    s += f'const string dataPath = "data/{path}";\n\n'
     s += f"void Application::init_relations() {{\n"
     s += "\tclear_relations();\n\n"
 
@@ -336,11 +371,11 @@ def generate_application_text(all_relations: "List[Relation]", query_group: str,
 
     s += "\n\n"
     s += f"#endif /* APPLICATION_{query_group.upper()}_{q.upper()}_BASE_HPP */\n"
-    
-    
+
     print(s)
 
     return s
+
 
 def generate_stream_text(relation_name):
     code = ""

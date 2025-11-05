@@ -1,4 +1,4 @@
-IMPORT DTREE FROM FILE 'retailer.txt';
+IMPORT DTREE FROM FILE 'retailer_vo1.txt';
 
 CREATE STREAM INVENTORY(locn int, dateid int, ksn int, inventoryunits int)
 FROM FILE './datasets/retailer/Inventory.tbl' LINE DELIMITED CSV(delimiter := '|');
