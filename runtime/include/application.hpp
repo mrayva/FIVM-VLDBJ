@@ -5,10 +5,12 @@
 
 #include <cstddef>
 #include <functional>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <thread>
 #include <vector>
+#include <chrono>
 
 #include "common.hpp"
 #include "csv_reader.hpp"
@@ -34,6 +36,14 @@ struct data_t;
 using SnapshotFn = std::function<void(dbtoaster::data_t&)>;
 
 class Application {
+ public:
+  struct BatchLogEntry {
+    size_t rows = 0;
+    size_t inserts = 0;
+    size_t deletes = 0;
+    double duration_ms = 0.0;
+  };
+
  protected:
   virtual void createDataSources();
 
@@ -57,6 +67,10 @@ class Application {
                                bool print_result);
 
   virtual void printCheckpoint(const dbtoaster::data_t& data);
+
+  bool log_batches_enabled = false;
+  std::ofstream batch_log_stream;
+  std::vector<BatchLogEntry> batch_logs;
 
   std::vector<DataChunkSource> static_sources;
   std::vector<DataChunkSource> dynamic_sources;
@@ -119,6 +133,37 @@ void roundRobinConsumer(std::vector<DataChunkSource>& sources,
     for (auto& src : sources) {
       if (auto chunk = src.source->next()) {
         src.cfg.callback(&data, *chunk);
+        active = true;
+      }
+    }
+  }
+}
+
+void roundRobinConsumerLogged(std::vector<DataChunkSource>& sources,
+                              dbtoaster::data_t& data,
+                              std::vector<Application::BatchLogEntry>& logs) {
+  bool active = true;
+
+  while (active) {
+    active = false;
+
+    for (auto& src : sources) {
+      if (auto chunk = src.source->next()) {
+        auto start = std::chrono::steady_clock::now();
+        src.cfg.callback(&data, *chunk);
+        auto end = std::chrono::steady_clock::now();
+
+        Application::BatchLogEntry entry;
+        entry.rows = chunk->row_count;
+        for (auto p : chunk->payload) {
+          if (p > 0)
+            entry.inserts++;
+          else if (p < 0)
+            entry.deletes++;
+        }
+        entry.duration_ms =
+            std::chrono::duration<double, std::milli>(end - start).count();
+        logs.push_back(std::move(entry));
         active = true;
       }
     }
@@ -234,7 +279,11 @@ void Application::processStreams(std::vector<DataChunkSource>& sources,
       sources, data, SNAPSHOT_INTERVAL,
       [this](dbtoaster::data_t& d) { this->onSnapshot(d); });
 #else
-  roundRobinConsumer(sources, data);
+  if (log_batches_enabled) {
+    roundRobinConsumerLogged(sources, data, batch_logs);
+  } else {
+    roundRobinConsumer(sources, data);
+  }
 #endif
 
 #ifdef LOG_MEMORY_INFO
@@ -271,6 +320,16 @@ void Application::printCheckpoint(const dbtoaster::data_t& data) {
 
 void Application::run(size_t num_of_runs, bool print_result,
                       size_t batch_size) {
+  const char* log_path = std::getenv("FIVM_BATCH_LOG");
+  if (log_path != nullptr) {
+    batch_log_stream.open(log_path, std::ios::out | std::ios::trunc);
+    log_batches_enabled = batch_log_stream.is_open();
+    if (!log_batches_enabled) {
+      std::cerr << "Warning: failed to open batch log at " << log_path
+                << ", logging disabled.\n";
+    }
+  }
+
   std::cout << "-------------" << std::endl;
 
   createDataSources();
@@ -332,6 +391,15 @@ void Application::run(size_t num_of_runs, bool print_result,
               << total_time.elapsedTimeInMilliSeconds() << " ms"
               << "    Batch size: " << batch_size << std::endl
               << "-------------" << std::endl;
+  }
+
+  if (log_batches_enabled && batch_log_stream.is_open()) {
+    batch_log_stream << "rows,inserts,deletes,duration_ms\n";
+    for (const auto& e : batch_logs) {
+      batch_log_stream << e.rows << "," << e.inserts << "," << e.deletes << ","
+                       << e.duration_ms << "\n";
+    }
+    batch_log_stream.close();
   }
 }
 
