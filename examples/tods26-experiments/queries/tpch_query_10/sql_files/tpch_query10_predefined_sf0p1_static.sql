@@ -1,4 +1,4 @@
-IMPORT DTREE FROM FILE 'tpch_query10.txt';
+IMPORT DTREE FROM FILE 'tods26-experiments/queries/tpch_query10.txt';
 
 CREATE STREAM LINEITEM (
         orderkey         INT,
@@ -18,9 +18,8 @@ CREATE STREAM LINEITEM (
         l_shipmode       CHAR(10),
         l_comment        VARCHAR(44)
     )
-  FROM FILE './datasets/tpch/lineitem.csv'
-  LINE DELIMITED CSV (delimiter := '|');
-
+  FROM FILE './datasets/updates_sf0p1_b10000_static/lineitem.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM ORDERS (
         orderkey         INT,
@@ -33,8 +32,8 @@ CREATE STREAM ORDERS (
         o_shippriority   INT,
         o_comment        VARCHAR(79)
     )
-  FROM FILE './datasets/tpch/orders.csv'
-  LINE DELIMITED CSV (delimiter := '|');
+  FROM FILE './datasets/updates_sf0p1_b10000_static/orders.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM CUSTOMER (
         custkey        INT,
@@ -46,8 +45,8 @@ CREATE STREAM CUSTOMER (
         c_mktsegment   CHAR(10),
         c_comment      VARCHAR(117)
     )
-  FROM FILE './datasets/tpch/customer.csv'
-  LINE DELIMITED CSV (delimiter := '|');
+  FROM FILE './datasets/updates_sf0p1_b10000_static/customer.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE TABLE NATION (
         nationkey      INT,
@@ -55,7 +54,7 @@ CREATE TABLE NATION (
         n_regionkey    INT,
         n_comment      VARCHAR(152)
     )
-  FROM FILE './datasets/tpch/nation.csv'
+  FROM FILE './datasets/updates_sf0p1_b10000_static/nation.csv'
   LINE DELIMITED CSV (delimiter := '|');
 
 SELECT  custkey, c_name, 

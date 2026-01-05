@@ -1,9 +1,9 @@
-IMPORT DTREE FROM FILE 'tpch_query10.txt';
+IMPORT DTREE FROM FILE '../variable_orders/tpch_q10_cust_nation_order.txt';
 
 CREATE STREAM LINEITEM (
         orderkey         INT,
-        l_partkey        INT,
-        l_suppkey        INT,
+        partkey          INT,
+        suppkey          INT,
         l_linenumber     INT,
         l_quantity       DECIMAL,
         l_extendedprice  DECIMAL,
@@ -18,7 +18,7 @@ CREATE STREAM LINEITEM (
         l_shipmode       CHAR(10),
         l_comment        VARCHAR(44)
     )
-  FROM FILE './datasets/updates_sf1_b10000_static/lineitem.csv'
+  FROM FILE './datasets/updates_sf1_b10000_dynamic/lineitem.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM ORDERS (
@@ -32,7 +32,7 @@ CREATE STREAM ORDERS (
         o_shippriority   INT,
         o_comment        VARCHAR(79)
     )
-  FROM FILE './datasets/updates_sf1_b10000_static/orders.csv'
+  FROM FILE './datasets/updates_sf1_b10000_dynamic/orders.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM CUSTOMER (
@@ -45,17 +45,19 @@ CREATE STREAM CUSTOMER (
         c_mktsegment   CHAR(10),
         c_comment      VARCHAR(117)
     )
-  FROM FILE './datasets/updates_sf1_b10000_static/customer.csv'
+  FROM FILE './datasets/updates_sf1_b10000_dynamic/customer.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
-CREATE TABLE NATION (
+
+CREATE STREAM NATION (
         nationkey      INT,
         n_name         CHAR(25),
-        n_regionkey    INT,
+        regionkey      INT,
         n_comment      VARCHAR(152)
     )
-  FROM FILE './datasets/updates_sf1_b10000_static/nation.csv'
-  LINE DELIMITED CSV (delimiter := '|');
+  FROM FILE './datasets/updates_sf1_b10000_dynamic/nation.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+
 
 SELECT  custkey, c_name, 
         c_acctbal,
@@ -65,7 +67,4 @@ SELECT  custkey, c_name,
         c_comment,
         SUM(l_extendedprice * (1 - l_discount))
 FROM    customer NATURAL JOIN orders NATURAL JOIN lineitem NATURAL JOIN nation
-WHERE   o_orderdate >= DATE('1993-10-01')
-  AND   o_orderdate < DATE('1994-01-01')
-  AND   l_returnflag = 'R'
 GROUP BY custkey, c_name, c_acctbal, c_phone, n_name, c_address, c_comment;

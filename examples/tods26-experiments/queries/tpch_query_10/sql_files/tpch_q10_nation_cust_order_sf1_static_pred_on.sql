@@ -1,9 +1,9 @@
-IMPORT DTREE FROM FILE 'tpch_query10.txt';
+IMPORT DTREE FROM FILE '../variable_orders/tpch_q10_nation_cust_order.txt';
 
 CREATE STREAM LINEITEM (
         orderkey         INT,
-        l_partkey        INT,
-        l_suppkey        INT,
+        partkey          INT,
+        suppkey          INT,
         l_linenumber     INT,
         l_quantity       DECIMAL,
         l_extendedprice  DECIMAL,
@@ -18,7 +18,7 @@ CREATE STREAM LINEITEM (
         l_shipmode       CHAR(10),
         l_comment        VARCHAR(44)
     )
-  FROM FILE './datasets/updates_sf0p1_b10000_dynamic/lineitem.csv'
+  FROM FILE './datasets/updates_sf1_b10000_static/lineitem.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM ORDERS (
@@ -32,7 +32,7 @@ CREATE STREAM ORDERS (
         o_shippriority   INT,
         o_comment        VARCHAR(79)
     )
-  FROM FILE './datasets/updates_sf0p1_b10000_dynamic/orders.csv'
+  FROM FILE './datasets/updates_sf1_b10000_static/orders.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 CREATE STREAM CUSTOMER (
@@ -45,17 +45,19 @@ CREATE STREAM CUSTOMER (
         c_mktsegment   CHAR(10),
         c_comment      VARCHAR(117)
     )
-  FROM FILE './datasets/updates_sf0p1_b10000_dynamic/customer.csv'
+  FROM FILE './datasets/updates_sf1_b10000_static/customer.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
-CREATE STREAM NATION (
+
+CREATE TABLE NATION (
         nationkey      INT,
         n_name         CHAR(25),
-        n_regionkey    INT,
+        regionkey      INT,
         n_comment      VARCHAR(152)
     )
-  FROM FILE './datasets/updates_sf0p1_b10000_dynamic/nation.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+  FROM FILE './datasets/updates_sf1_b10000_static/nation.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+
 
 SELECT  custkey, c_name, 
         c_acctbal,
