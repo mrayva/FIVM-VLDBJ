@@ -9,8 +9,8 @@
 #include <iostream>
 #include <memory>
 #include <thread>
-#include <vector>
 #include <chrono>
+#include <vector>
 
 #include "common.hpp"
 #include "csv_reader.hpp"
@@ -38,6 +38,8 @@ using SnapshotFn = std::function<void(dbtoaster::data_t&)>;
 class Application {
  public:
   struct BatchLogEntry {
+    std::string source_name;
+    int32_t batch_id = -1;
     size_t rows = 0;
     size_t inserts = 0;
     size_t deletes = 0;
@@ -154,6 +156,9 @@ void roundRobinConsumerLogged(std::vector<DataChunkSource>& sources,
         auto end = std::chrono::steady_clock::now();
 
         Application::BatchLogEntry entry;
+        entry.source_name = src.cfg.name;
+        // batch_id omitted/not reliable; set to -1
+        entry.batch_id = -1;
         entry.rows = chunk->row_count;
         for (auto p : chunk->payload) {
           if (p > 0)
@@ -394,9 +399,10 @@ void Application::run(size_t num_of_runs, bool print_result,
   }
 
   if (log_batches_enabled && batch_log_stream.is_open()) {
-    batch_log_stream << "rows,inserts,deletes,duration_ms\n";
+    batch_log_stream << "source,batch_id,rows,inserts,deletes,duration_ms\n";
     for (const auto& e : batch_logs) {
-      batch_log_stream << e.rows << "," << e.inserts << "," << e.deletes << ","
+      batch_log_stream << e.source_name << "," << e.batch_id << "," << e.rows
+                       << "," << e.inserts << "," << e.deletes << ","
                        << e.duration_ms << "\n";
     }
     batch_log_stream.close();
