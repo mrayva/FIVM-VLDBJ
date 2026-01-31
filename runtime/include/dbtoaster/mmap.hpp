@@ -733,8 +733,12 @@ class MultiHashMap {
       HASH_TYPE h = primary_index->computeHash(k);
       T* elem = primary_index->get(k, h);
       if (elem != nullptr) {
-          if (Value<V2>::isZero(v)) erase(elem, h);
-          else elem->__av = v;
+          if (Value<V2>::isZero(v)) {
+              // Keep key resident; just set multiplicity to zero
+              elem->__av = Value<V>::zero;
+          } else {
+              elem->__av = v;
+          }
       }
       else if (!Value<V2>::isZero(v)) {
           k.__av = v;
@@ -762,7 +766,7 @@ class MultiHashMap {
       T* elem = primary_index->get(k, h);
       if (elem != nullptr) {
           elem->__av += v;
-          if (Value<V>::isZero(elem->__av)) erase(elem, h);
+          // Keep key resident even if multiplicity becomes zero
       }
       else {
           k.__av = v;
