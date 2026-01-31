@@ -14,9 +14,14 @@ examples/datasets
 
 # Generated experiment artifacts (keep out of git; outputs can be large and machine-specific).
 examples/tods26-experiments/output/
-examples/tods26-experiments/plots/*.png
-examples/tods26-experiments/plots/*.pdf
-examples/tods26-experiments/plots/*.svg
+examples/tods26-experiments/plots/**/*.png
+examples/tods26-experiments/plots/**/*.pdf
+examples/tods26-experiments/plots/**/*.svg
+examples/tods26-experiments/plots_backup/
+
+# Generated doc artifacts (keep sources, ignore builds/caches).
+examples/tods26-experiments/doc/*.pdf
+examples/tods26-experiments/doc/__pycache__/
 aux/data_schema.py
 aux/generate_1-ivm_path.py
 aux/generate_path_m3.py
@@ -36,5 +41,5 @@ aux/__pycache__/tpch_schema.cpython-311.pyc
 aux/__pycache__/variable_order.cpython-310.pyc
 aux/__pycache__/variable_order.cpython-311.pyc
 
-plots/
-plots_backup/
+/plots/
+/plots_backup/

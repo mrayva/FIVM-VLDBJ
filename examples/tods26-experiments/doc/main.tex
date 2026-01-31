@@ -1,0 +1,187 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes}
+
+\renewcommand{\Join}{\bowtie}
+\newcommand{\Agg}[1]{\mathcal{L}_{#1}}
+\renewcommand{\deg}{\operatorname{deg}}
+
+\newcommand{\MATCH}{\textbf{match}}
+\newcommand{\LET}{\textbf{let} \hspace{0.1em}}
+\newcommand{\RETURN}{\textbf{return} \hspace{0.1em}}
+\newcommand{\IF}{\textbf{if} \hspace{0.1em}}
+\newcommand{\ELSE}{\textbf{else} \hspace{0.1em}}
+\newcommand{\ENDIF}{\textbf{end if}\hspace{0.1em}}
+\newcommand{\TAB}{\hspace*{1.2em}}
+\newcommand{\VIEW}[1]{#1} % or your existing \VIEW macro
+\newcommand{\sch}{\mathsf{sch}}
+% \newcommand{\VIEW}[2][]{\ifthenelse{\isempty{#1}}{\mathsf{#2}\xspace}{\mathsf{#2[\mathit{#1}]}\xspace}}
+
+
+\title{A Cost Model for Ranking View Trees}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\paragraph{Goal.}
+Given a view tree $T$ and an update workload, compute a \emph{symbolic cost expression} $\mathrm{Score}(T)$ to rank competing view trees (different variable orders) for the same query.
+
+\section{Cost Model}
+
+When a base relation receives updates, the changes propagate upward through the view tree.
+At each view along the update path, we compute the delta to that view.
+Our cost model uses the sizes of these deltas as a proxy for the computational work required to maintain the views.
+
+\paragraph{View definitions.}
+In view trees, an internal view is defined by \emph{joining} its child views.
+Optionally, the view may also perform an \emph{aggregation/marginalization} step.
+Thus, a single view may involve:
+(i) a join step that combines the affected child delta with the other child views, and
+(ii) an optional aggregation step that groups the join result by the view's output keys.
+
+\paragraph{Per-view cost.}
+Consider a view $V$ with children $V_1,\ldots,V_k$.
+When an update arrives, only one child view is affected; let this be child $V_j$ with delta $\delta V_j$.
+We estimate the delta size for $V$ in two stages.
+
+\begin{enumerate}
+  \item \textbf{Join stage.}
+  The view first joins the affected delta with the other child views on the join key $A$.
+  The size of the intermediate delta after the join is estimated as
+  \[
+  C_{\mathrm{join}}
+  \;=\;
+  |\delta V_j|\cdot \prod_{i\neq j}\deg_{V_i}(*\mid A),
+  \]
+  where $\deg_{V_i}(*\mid A)$ is the average number of tuples in $V_i$ per distinct value of $A$
+  (equivalently, the average fanout when probing $V_i$ by $A$).
+
+  \item \textbf{Optional aggregation stage.}
+  If $V$ aggregates away bound variables, we estimate the output delta size by
+  \[
+  C_{\mathrm{agg}}
+  \;=\;
+  \min\bigl(|\delta V|_{\mathrm{join}},\, |Dom(keys)|\bigr),
+  \]
+  where $|Dom(keys)|$ is a domain cap for the variables of $V$.
+\end{enumerate}
+
+The cost incurred at view $V$ is the sum of the join and aggregation costs:
+\[
+C_V \;=\; C_{\mathrm{join}} + C_{\mathrm{agg}}.
+\]
+
+
+\paragraph{Total cost.}
+We evaluate a view tree under a workload by summing the per-view delta sizes induced by updates to all
+base relations.
+We assume that, over a fixed time window, each updatable relation $R$ receives a batch of updates $\delta R$
+of size $U_R$. Some relations may be non-updatable (e.g., dimension tables), in which case $U_R=0$.
+
+For each relation $R$ with $U_R>0$, we treat $U_R$ as the input delta size at the leaf of $R$ and propagate
+this delta upward along the unique path to the root.
+At each view on the path, estimate the cost $C_V$ using the rules above.
+% The total cost is the sum of these per-view costs along the update path.
+
+The total maintenance cost for processing the accumulated updates to all base relations is obtained by repeating this process for every updatable relation $R$ (with its corresponding $U_R$) and summing the per-view contributions along each update path.
+
+
+The next section gives the formal algorithmic formulation that computes this total score symbolically.
+The result is a symbolic expression in $\{U_R\}$, $\{\deg_V(*|A)\}$, and $\{Dom(keys)\}$.
+
+
+
+\paragraph{Algorithm.}
+\begin{figure}[t]
+\centering
+\setlength{\tabcolsep}{3pt}
+%
+\begin{tabular}{@{}c@{}c@{~~~~}l@{}}
+    \toprule
+    \multicolumn{3}{c}{$\textsc{Score}(\text{view tree } \tau, \text{update } \VIEW{\delta R}) : (\Delta,\,S)$}\\
+    \midrule
+    \multicolumn{3}{l}{\MATCH \, $\tau$:}\\
+    \midrule
+    \phantom{a} & $R[\sch(R)]$ &
+    \hspace*{0.5em}\RETURN $\bigl(|\VIEW{\delta R}|,\;0\bigr)$\\[2pt]
+    \cmidrule{2-3} \\[-6pt]
+    &
+    \begin{minipage}[t]{1.6cm}
+        \begin{tikzpicture}[xscale=0.45, yscale=1]
+            \node at (0,-2)  (n4) {$V^{@X}_{rels}[keys]$};
+            \node at (-1,-3)  (n1) {$\tau_1$} edge[-] (n4);
+            \node at (0,-3)  (n2) {$\ldots$};
+            \node at (1,-3)  (n3) {$\tau_k$} edge[-] (n4);
+        \end{tikzpicture}
+    \end{minipage}
+    &
+    \begin{minipage}[t]{8.8cm}
+\vspace{-4.4em}
+  \hspace*{0.5em}\LET $V^{@X_i}_{rels_i}[keys_i]\text{ be root of } \tau_i,\ \forall i\in[k]$\\[0.5ex]
+\hspace*{0.5em}\LET $j\in[k] \text{ be such that } \VIEW{R}\in\mathsf{rels}_j$ \\[0.5ex]
+\hspace*{0.5em}\LET $(\Delta_j, S_j) \;=\; \textsc{Score}(\tau_j, \VIEW{\delta R})$ \\[0.7ex]
+
+
+\hspace*{0.5em}\LET $\Delta_{\mathrm{join}} \;=\; \Delta_j \cdot \prod_{i\in[k],\,i\neq j}\deg_{{V^{@X_i}_{rels_i}}}(*\mid A)$ \\[0.7ex]
+
+\hspace*{0.5em}\IF $X \notin keys$ \hfill{\small (aggregating / bound-variable node)}\\[0.5ex]
+\TAB \LET $\Delta_{agg} \;=\; \min(\Delta_{\mathrm{join}},\, |Dom(keys)|)$ \\[0.5ex]
+\TAB \RETURN $\bigl(\Delta_{agg},\; S_j + \Delta_{\mathrm{join}} + \Delta_{agg}\bigr)$ \\[0.7ex]
+
+\hspace*{0.5em}\RETURN $\bigl(\Delta_{\mathrm{join}},\; S_j + \Delta_{\mathrm{join}}\bigr)$ \\[0.5ex]
+    \end{minipage}
+    \\
+    \bottomrule
+\end{tabular}
+\caption{Recursive symbolic scoring.
+Given a view tree $\tau$ and an update $\VIEW{\delta R}$ to base relation $\VIEW{R}$,
+$\textsc{Score}(\tau,\VIEW{\delta R})$ returns: (i) $\Delta$, the estimated delta size at the root of $\tau$,
+and (ii) $S$, the accumulated score along the unique update path (sum of per-view costs).
+$F_{v\mid j}$ is the product of sibling fanouts (average degrees on join key $A$) when the delta comes from child $j$.
+If the root variable $X$ is bound ($X\notin keys$), we apply the domain/NDV cap $D_v$ and charge both join and
+aggregation work via $C_v=\Delta_{\mathrm{join}}+\Delta$; otherwise $C_v=\Delta$.}
+\label{fig:score_recursive_paperstyle}
+\end{figure}
+ 
+The output is a symbolic expression in $\{U_R\}$, $\{\deg_V(*|A)\}$, $Dom(keys)$.
+
+\section{Statistics}
+
+The cost model requires three statistics: update volume $U_R$, join degree $\deg_V(*|A)$, and aggregation domain size $|Dom(keys)|$.
+
+\paragraph{Update volume ($U_R$).}
+$U_R$ is the number of update tuples accumulated for relation $R$ between consecutive maintenance rounds (i.e., the batch size).
+Different relations exhibit different update frequencies; e.g., in TPC-H, \texttt{lineitem} and \texttt{orders} are high-frequency while \texttt{customer} and \texttt{nation} are low-frequency.
+Obtain from historical measurement or workload specification.
+
+\paragraph{Join degree ($\deg_V(*|A)$).}
+$\deg_V(*|A)$ is the average number of tuples in view $V$ per distinct value of key $A$.
+When a delta probes sibling view $V$ on join key $A$, each probe tuple finds $\deg_V(*|A)$ matches on average.
+
+To estimate, use the view size and domain size:
+$\deg_V(*|A) \approx |V| / |\mathrm{Dom}(A \text{ in } V)|$.
+If $A$ is a primary key in $V$, then $\deg_V(*|A) = 1$.
+
+Alternatively, if $V$ is indexed by $A$, $\deg_V(*|A)$ is the average bucket size.
+Can also be measured at runtime.
+
+\paragraph{Aggregation domain size ($D_v$).}
+At an aggregation node $v$, the output delta size is bounded by the number of distinct group-by keys.
+$D_v = |\mathrm{Dom}(\text{group-by keys})|$ at node $v$.
+Obtain from catalog statistics, view size, or runtime measurement.
+
+\paragraph{Stationarity assumption.}
+The cost model uses current statistics to predict future maintenance costs, assuming statistics are approximately stationary: update frequencies $U_R$ remain stable, join degrees do not change drastically, and aggregation domains $D_v$ do not grow or shrink significantly.
+When violated (e.g., data drift), re-calibrate by refreshing statistics periodically.
+
+\input{examples}
+
+\end{document}

@@ -6,13 +6,35 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+# python generate_tail_throughput_plots.py \
+#     --input-dir ../output \
+#     --output-dir . \
+#     --dpi 300 \
+#     --smooth-window 20 \
+#     --drop-first-tail 
+#     # --per-source
+# 
+# # Also generate combined (no head/tail split) throughput plots.
+# python generate_throughput_plots.py \
+#     --input-dir ../output \
+#     --output-dir . \
+#     --dpi 300
+
+
+# Add plots for q10count
 python generate_tail_throughput_plots.py \
-    --input-dir ../output \
+    --input-dir ../output/q10count \
     --output-dir . \
     --dpi 300 \
     --smooth-window 20 \
-    --drop-first-tail \
-    --per-source
+    --drop-first-tail 
+    # --per-source
+
+# Also generate combined (no head/tail split) throughput plots.
+python generate_throughput_plots.py \
+    --input-dir ../output/q10count \
+    --output-dir . \
+    --dpi 300
 
 
 echo "Done."
