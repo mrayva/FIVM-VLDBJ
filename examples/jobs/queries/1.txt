@@ -1,0 +1,28 @@
+22 5
+0 movie_id int -1 {} 0
+1 company_id int 0 {0} 0
+2 company_type_id int 1 {0,1} 0
+3 ct_kind string 2 {0,1,2} 0
+4 mc_note string 2 {0,1,2} 0
+5 mc_id int 4 {0,1,2,4} 0
+6 info_type_id int 0 {0} 0
+7 it_info string 6 {0,6} 0
+8 mii_id int 6 {0,6} 0
+9 mii_note string 8 {0,8,6} 0
+10 mii_info string 9 {0,8,6,9} 0
+11 t_production_year int 0 {0} 0
+12 t_imdb_index string 11 {0,11} 0
+13 imdb_id int 12 {0,11,12} 0
+14 t_episode_nr int 13 {0,11,12,13} 0
+15 t_season_nr int 14 {0,11,12,13,14} 0
+16 t_series_years string 15 {0,11,12,13,14,15} 0
+17 t_phonetic_code string 16 {0,16,11,12,13,14,15} 0
+18 t_title string 17 {0,16,17,11,12,13,14,15} 0
+19 t_md5sum string 18 {0,11,12,13,14,15,16,17,18} 0
+20 t_episode_of_id int 19 {0,11,12,13,14,15,16,17,18,19} 0
+21 kind_id int 20 {0,11,12,13,14,15,16,17,18,19,20} 0
+TITLE 21 movie_id,t_title,t_imdb_index,kind_id,t_production_year,imdb_id,t_phonetic_code,t_episode_of_id,t_season_nr,t_episode_nr,t_series_years,t_md5sum
+COMPANY_TYPE 3 company_type_id,ct_kind
+INFO_TYPE 7 info_type_id,it_info
+MOVIE_COMPANIES 5 mc_id,movie_id,company_id,company_type_id,mc_note
+MOVIE_INFO_IDX 10 mii_id,movie_id,info_type_id,mii_info,mii_note

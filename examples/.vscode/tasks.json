@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build",
+        "type": "shell",
+        "command": "g++ -g -Wall -Wno-unused-variable -std=c++17 -pedantic src/main.cpp -I ../backend/lib -I src -I src/lib -DBATCH_SIZE=1000 -include generated/cpp/jobs/jobs-1-F-IVM_BATCH.hpp -include src/application/jobs/application_jobs-Q1.hpp -o bin/jobs/jobs-1-F-IVM_BATCH_1000",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always"
+        }
+      }
+    ]
+  }
+  

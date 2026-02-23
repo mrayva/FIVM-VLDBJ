@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.m3": "pseudocode",
+        "limits": "cpp"
+    }
+}

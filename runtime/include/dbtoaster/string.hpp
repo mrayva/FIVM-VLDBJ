@@ -450,6 +450,29 @@ struct PooledRefCountedString {
     uint64_t n = (len <= size_ - pos) ? len : (size_ - pos);
     return PooledRefCountedString(data_ + pos, n);
   }
+
+  // Find substring, returns position or npos if not found (compatible with std::string::find)
+  static constexpr uint64_t npos = static_cast<uint64_t>(-1);
+
+  inline uint64_t find(const char* needle) const noexcept {
+    if (!data_ || !needle) return npos;
+    const char* found = strstr(data_, needle);
+    return found ? static_cast<uint64_t>(found - data_) : npos;
+  }
+
+  inline uint64_t find(const char* needle, uint64_t pos) const noexcept {
+    if (!data_ || !needle || pos >= size_) return npos;
+    const char* found = strstr(data_ + pos, needle);
+    return found ? static_cast<uint64_t>(found - data_) : npos;
+  }
+
+  inline uint64_t find(const std::string& needle) const noexcept {
+    return find(needle.c_str());
+  }
+
+  inline uint64_t find(const PooledRefCountedString& needle) const noexcept {
+    return find(needle.c_str());
+  }
 };
 
 std::ostream& operator<<(std::ostream& os, const PooledRefCountedString& s) {

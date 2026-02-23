@@ -12,4 +12,4 @@ then
     ${SCRIPTS_DIR}/build-compiler.sh
 fi
 
-scala $COMPILER_BIN $@
+java -jar $COMPILER_BIN $@
