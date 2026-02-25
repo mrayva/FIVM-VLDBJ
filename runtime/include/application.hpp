@@ -100,6 +100,10 @@ std::unique_ptr<IDataChunkReader> createReader(const DataSourceConfig& cfg,
     case DataSourceType::PARQUET:
       // TODO: implement parquet reader
       break;
+    case DataSourceType::ZERIALIZE:
+      // Zerialize sources use queue-based adaptors, created separately
+      // See: runtime/include/zerialize/input_adaptor.hpp
+      throw std::runtime_error("ZERIALIZE sources require ZerializeInputAdaptor");
   }
 
   throw std::runtime_error("Unknown DataSourceFormat: " + cfg.name);

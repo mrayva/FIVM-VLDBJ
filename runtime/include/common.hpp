@@ -37,7 +37,7 @@ enum class PrimitiveType : uint8_t {
   DATE
 };
 
-enum class DataSourceType : uint8_t { CSV, PARQUET };
+enum class DataSourceType : uint8_t { CSV, PARQUET, ZERIALIZE };
 
 struct SchemaField {
   std::string name;
