@@ -13,6 +13,13 @@
 #include "message.hpp"
 #include "queue.hpp"
 
+// Zerialize protocol headers
+#include <zerialize/protocols/msgpack.hpp>
+#include <zerialize/protocols/cbor.hpp>
+#include <zerialize/protocols/flex.hpp>
+#include <zerialize/protocols/zera.hpp>
+#include <zerialize/protocols/json.hpp>
+
 namespace fivm {
 namespace zerialize {
 
@@ -276,29 +283,27 @@ private:
     }
 
     // -------------------------------------------------------------------------
-    // Stub implementations - users should provide zerialize headers
+    // Format-specific deserializers using zerialize readers
     // -------------------------------------------------------------------------
     
-    bool deserialize_msgpack(std::span<const uint8_t>, DataChunk&) {
-        // To be implemented when zerialize is available
-        // return deserialize_generic<zerialize::msgpack::Reader>(data, chunk);
-        throw std::runtime_error("MsgPack deserialization requires zerialize library");
+    bool deserialize_msgpack(std::span<const uint8_t> data, DataChunk& chunk) {
+        return deserialize_generic<zerialize::MsgPack::Deserializer>(data, chunk);
     }
 
-    bool deserialize_cbor(std::span<const uint8_t>, DataChunk&) {
-        throw std::runtime_error("CBOR deserialization requires zerialize library");
+    bool deserialize_cbor(std::span<const uint8_t> data, DataChunk& chunk) {
+        return deserialize_generic<zerialize::CBOR::Deserializer>(data, chunk);
     }
 
-    bool deserialize_flexbuffers(std::span<const uint8_t>, DataChunk&) {
-        throw std::runtime_error("FlexBuffers deserialization requires zerialize library");
+    bool deserialize_flexbuffers(std::span<const uint8_t> data, DataChunk& chunk) {
+        return deserialize_generic<zerialize::Flex::Deserializer>(data, chunk);
     }
 
-    bool deserialize_zera(std::span<const uint8_t>, DataChunk&) {
-        throw std::runtime_error("Zera deserialization requires zerialize library");
+    bool deserialize_zera(std::span<const uint8_t> data, DataChunk& chunk) {
+        return deserialize_generic<zerialize::Zera::Deserializer>(data, chunk);
     }
 
-    bool deserialize_json(std::span<const uint8_t>, DataChunk&) {
-        throw std::runtime_error("JSON deserialization requires zerialize library");
+    bool deserialize_json(std::span<const uint8_t> data, DataChunk& chunk) {
+        return deserialize_generic<zerialize::Json::Deserializer>(data, chunk);
     }
 };
 

@@ -1,0 +1,11 @@
+{
+  "name": "fivm-runtime",
+  "version-string": "1.1.0",
+  "description": "FIVM Runtime - Factorized Incremental View Maintenance",
+  "homepage": "https://github.com/mrayva/FIVM-VLDBJ",
+  "dependencies": [
+    "flatbuffers",
+    "msgpack",
+    "gtest"
+  ]
+}

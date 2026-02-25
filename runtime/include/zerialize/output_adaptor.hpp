@@ -11,6 +11,13 @@
 #include "message.hpp"
 #include "queue.hpp"
 
+// Zerialize protocol headers
+#include <zerialize/protocols/msgpack.hpp>
+#include <zerialize/protocols/cbor.hpp>
+#include <zerialize/protocols/flex.hpp>
+#include <zerialize/protocols/zera.hpp>
+#include <zerialize/protocols/json.hpp>
+
 namespace fivm {
 namespace zerialize {
 
@@ -110,122 +117,80 @@ private:
     }
 
     // -------------------------------------------------------------------------
-    // Format-specific serializers (stubs - implement with zerialize)
+    // Format-specific serializers using zerialize writers
     // -------------------------------------------------------------------------
 
-    std::vector<uint8_t> serialize_msgpack(const DataChunk& chunk, size_t row) {
-        // Example implementation structure:
-        // zerialize::msgpack::Writer writer;
-        // auto map = writer.map(cfg_.schema.size());
-        // for (size_t i = 0; i < cfg_.schema.size(); ++i) {
-        //     map.key(cfg_.schema[i].name);
-        //     write_value(map, chunk.cols[i].get(), row);
-        // }
-        // return writer.finish();
+    /// Generic serialization using a Protocol's RootSerializer and Serializer
+    template <typename Protocol>
+    std::vector<uint8_t> serialize_generic(const DataChunk& chunk, size_t row) {
+        typename Protocol::RootSerializer root;
+        typename Protocol::Serializer ser(root);
+        
+        ser.begin_map(cfg_.schema.size());
+        for (size_t i = 0; i < cfg_.schema.size(); ++i) {
+            ser.key(cfg_.schema[i].name);
+            write_value(ser, chunk.cols[i].get(), cfg_.schema[i].type, row);
+        }
+        ser.end_map();
+        
+        auto buf = root.finish();
+        return std::vector<uint8_t>(buf.data(), buf.data() + buf.size());
+    }
+    
+    /// Write a typed value to the serializer
+    template <typename Serializer>
+    void write_value(Serializer& ser, const ColumnBase* col, PrimitiveType type, size_t row) {
+        switch (type) {
+            case PrimitiveType::INT8:
+                ser.int64(get_value<int8_t>(col, row));
+                break;
+            case PrimitiveType::INT16:
+                ser.int64(get_value<int16_t>(col, row));
+                break;
+            case PrimitiveType::INT32:
+                ser.int64(get_value<int32_t>(col, row));
+                break;
+            case PrimitiveType::INT64:
+                ser.int64(get_value<int64_t>(col, row));
+                break;
+            case PrimitiveType::FLOAT:
+                ser.double_(get_value<float>(col, row));
+                break;
+            case PrimitiveType::DOUBLE:
+                ser.double_(get_value<double>(col, row));
+                break;
+            case PrimitiveType::CHAR:
+                ser.string(std::string_view(&get_value<char>(col, row), 1));
+                break;
+            case PrimitiveType::STRING: {
+                const auto& s = get_value<string_t>(col, row);
+                ser.string(std::string_view(s.c_str(), s.size()));
+                break;
+            }
+            case PrimitiveType::DATE:
+                ser.int64(get_value<date_t>(col, row).value);
+                break;
+        }
+    }
 
-        // Fallback: simple key=value text format for testing
-        return serialize_simple_text(chunk, row);
+    std::vector<uint8_t> serialize_msgpack(const DataChunk& chunk, size_t row) {
+        return serialize_generic<zerialize::MsgPack>(chunk, row);
     }
 
     std::vector<uint8_t> serialize_cbor(const DataChunk& chunk, size_t row) {
-        return serialize_simple_text(chunk, row);  // Stub
+        return serialize_generic<zerialize::CBOR>(chunk, row);
     }
 
     std::vector<uint8_t> serialize_flexbuffers(const DataChunk& chunk, size_t row) {
-        return serialize_simple_text(chunk, row);  // Stub
+        return serialize_generic<zerialize::Flex>(chunk, row);
     }
 
     std::vector<uint8_t> serialize_zera(const DataChunk& chunk, size_t row) {
-        return serialize_simple_text(chunk, row);  // Stub
+        return serialize_generic<zerialize::Zera>(chunk, row);
     }
 
     std::vector<uint8_t> serialize_json(const DataChunk& chunk, size_t row) {
-        // Simple JSON serialization
-        std::string json = "{";
-        
-        for (size_t i = 0; i < cfg_.schema.size(); ++i) {
-            if (i > 0) json += ",";
-            json += "\"" + cfg_.schema[i].name + "\":";
-            json += value_to_json(chunk.cols[i].get(), cfg_.schema[i].type, row);
-        }
-        
-        json += "}";
-        return std::vector<uint8_t>(json.begin(), json.end());
-    }
-
-    /// Fallback text serialization for testing
-    std::vector<uint8_t> serialize_simple_text(const DataChunk& chunk, size_t row) {
-        std::string text;
-        
-        for (size_t i = 0; i < cfg_.schema.size(); ++i) {
-            if (i > 0) text += "|";
-            text += cfg_.schema[i].name + "=";
-            text += value_to_string(chunk.cols[i].get(), cfg_.schema[i].type, row);
-        }
-        
-        return std::vector<uint8_t>(text.begin(), text.end());
-    }
-
-    /// Convert column value to string
-    std::string value_to_string(const ColumnBase* col, PrimitiveType type, size_t row) {
-        switch (type) {
-            case PrimitiveType::INT8:
-                return std::to_string(get_value<int8_t>(col, row));
-            case PrimitiveType::INT16:
-                return std::to_string(get_value<int16_t>(col, row));
-            case PrimitiveType::INT32:
-                return std::to_string(get_value<int32_t>(col, row));
-            case PrimitiveType::INT64:
-                return std::to_string(get_value<int64_t>(col, row));
-            case PrimitiveType::FLOAT:
-                return std::to_string(get_value<float>(col, row));
-            case PrimitiveType::DOUBLE:
-                return std::to_string(get_value<double>(col, row));
-            case PrimitiveType::CHAR:
-                return std::string(1, get_value<char>(col, row));
-            case PrimitiveType::STRING: {
-                const auto& s = get_value<string_t>(col, row);
-                return std::string(s.c_str());
-            }
-            case PrimitiveType::DATE:
-                return std::to_string(get_value<date_t>(col, row).value);
-        }
-        return "";
-    }
-
-    /// Convert column value to JSON
-    std::string value_to_json(const ColumnBase* col, PrimitiveType type, size_t row) {
-        switch (type) {
-            case PrimitiveType::INT8:
-            case PrimitiveType::INT16:
-            case PrimitiveType::INT32:
-            case PrimitiveType::INT64:
-            case PrimitiveType::FLOAT:
-            case PrimitiveType::DOUBLE:
-            case PrimitiveType::DATE:
-                return value_to_string(col, type, row);
-            case PrimitiveType::CHAR:
-            case PrimitiveType::STRING:
-                return "\"" + escape_json(value_to_string(col, type, row)) + "\"";
-        }
-        return "null";
-    }
-
-    /// Escape string for JSON
-    static std::string escape_json(const std::string& s) {
-        std::string result;
-        result.reserve(s.size());
-        for (char c : s) {
-            switch (c) {
-                case '"':  result += "\\\""; break;
-                case '\\': result += "\\\\"; break;
-                case '\n': result += "\\n";  break;
-                case '\r': result += "\\r";  break;
-                case '\t': result += "\\t";  break;
-                default:   result += c;
-            }
-        }
-        return result;
+        return serialize_generic<zerialize::Json>(chunk, row);
     }
 
     template <typename T>
