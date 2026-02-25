@@ -48,7 +48,8 @@ CREATE STREAM CUSTOMER (
   FROM FILE './datasets/updates_sf1_b10000_static/customer.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
-CREATE STREAM SUPPLIER (
+
+CREATE TABLE SUPPLIER (
         suppkey        INT,
         s_name         CHAR(25),
         s_address      VARCHAR(40),
@@ -58,7 +59,8 @@ CREATE STREAM SUPPLIER (
         s_comment      VARCHAR(101)
     )
   FROM FILE './datasets/updates_sf1_b10000_static/supplier.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+  LINE DELIMITED CSV (delimiter := '|');
+
 
 CREATE TABLE NATION (
         nationkey      INT,
@@ -69,6 +71,7 @@ CREATE TABLE NATION (
   FROM FILE './datasets/updates_sf1_b10000_static/nation.csv'
   LINE DELIMITED CSV (delimiter := '|');
 
+
 CREATE TABLE REGION (
         regionkey      INT,
         r_name         CHAR(25),
@@ -76,6 +79,7 @@ CREATE TABLE REGION (
     )
   FROM FILE './datasets/updates_sf1_b10000_static/region.csv'
   LINE DELIMITED CSV (delimiter := '|');
+
 
 SELECT n_name, SUM(l_extendedprice * (1 - l_discount))
 FROM customer NATURAL JOIN orders NATURAL JOIN lineitem NATURAL JOIN supplier NATURAL JOIN nation NATURAL JOIN region

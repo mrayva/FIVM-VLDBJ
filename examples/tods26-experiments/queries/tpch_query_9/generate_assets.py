@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-from copy import deepcopy
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[4] / "aux"))
@@ -17,19 +16,23 @@ KEY_MAP = {
 }
 
 
-def build_supplier_relation():
-    supplier = deepcopy(tpch.Supplier)
-    supplier.variables = dict(supplier.variables)
-    supplier.private_keys = set(supplier.private_keys)
-    if "s_nationkey" in supplier.variables:
-        supplier.variables["nationkey"] = supplier.variables.pop("s_nationkey")
-        supplier.private_keys.discard("s_nationkey")
-        supplier.private_keys.add("nationkey")
-    return supplier
+SUPPLIER_SHARED = Relation(
+    "supplier",
+    {
+        "suppkey": "int",
+        "s_name": "string",
+        "s_address": "string",
+        "nationkey": "int",
+        "s_phone": "string",
+        "s_acctbal": "double",
+        "s_comment": "string",
+    },
+    {"suppkey", "nationkey"},
+)
 
 
 def build_relations() -> list[Relation]:
-    return [tpch.Part, tpch.PartSupp, tpch.Lineitem, tpch.Orders, build_supplier_relation(), tpch.Nation]
+    return [tpch.Part, tpch.PartSupp, tpch.Lineitem, tpch.Orders, SUPPLIER_SHARED, tpch.Nation]
 
 
 def build_chain(ordering):
@@ -101,7 +104,87 @@ def write_vo_files():
 
 def sql_template(mode, scale, pred_on, vo_file):
     base_path = f"./datasets/updates_{scale}_b10000_{mode}"
-    nation_decl = f"""
+
+    # Dimension tables: TABLE in static mode, STREAM in dynamic mode
+    part_table = f"""
+CREATE TABLE PART (
+        partkey        INT,
+        p_name         VARCHAR(55),
+        p_mfgr         CHAR(25),
+        p_brand        CHAR(10),
+        p_type         VARCHAR(25),
+        p_size         INT,
+        p_container    CHAR(10),
+        p_retailprice  DECIMAL,
+        p_comment      VARCHAR(23)
+    )
+  FROM FILE '{base_path}/part.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    part_stream = f"""
+CREATE STREAM PART (
+        partkey        INT,
+        p_name         VARCHAR(55),
+        p_mfgr         CHAR(25),
+        p_brand        CHAR(10),
+        p_type         VARCHAR(25),
+        p_size         INT,
+        p_container    CHAR(10),
+        p_retailprice  DECIMAL,
+        p_comment      VARCHAR(23)
+    )
+  FROM FILE '{base_path}/part.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
+    partsupp_table = f"""
+CREATE TABLE PARTSUPP (
+        partkey         INT,
+        suppkey         INT,
+        ps_availqty     INT,
+        ps_supplycost   DECIMAL,
+        ps_comment      VARCHAR(199)
+    )
+  FROM FILE '{base_path}/partsupp.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    partsupp_stream = f"""
+CREATE STREAM PARTSUPP (
+        partkey         INT,
+        suppkey         INT,
+        ps_availqty     INT,
+        ps_supplycost   DECIMAL,
+        ps_comment      VARCHAR(199)
+    )
+  FROM FILE '{base_path}/partsupp.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
+    supplier_table = f"""
+CREATE TABLE SUPPLIER (
+        suppkey        INT,
+        s_name         CHAR(25),
+        s_address      VARCHAR(40),
+        nationkey      INT,
+        s_phone        CHAR(15),
+        s_acctbal      DECIMAL,
+        s_comment      VARCHAR(101)
+    )
+  FROM FILE '{base_path}/supplier.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    supplier_stream = f"""
+CREATE STREAM SUPPLIER (
+        suppkey        INT,
+        s_name         CHAR(25),
+        s_address      VARCHAR(40),
+        nationkey      INT,
+        s_phone        CHAR(15),
+        s_acctbal      DECIMAL,
+        s_comment      VARCHAR(101)
+    )
+  FROM FILE '{base_path}/supplier.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
+    nation_table = f"""
 CREATE TABLE NATION (
         nationkey      INT,
         n_name         CHAR(25),
@@ -110,6 +193,16 @@ CREATE TABLE NATION (
     )
   FROM FILE '{base_path}/nation.csv'
   LINE DELIMITED CSV (delimiter := '|');
+"""
+    nation_stream = f"""
+CREATE STREAM NATION (
+        nationkey      INT,
+        n_name         CHAR(25),
+        regionkey      INT,
+        n_comment      VARCHAR(152)
+    )
+  FROM FILE '{base_path}/nation.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 """
     where_clause = "WHERE p_name LIKE '%green%'\n" if pred_on else ""
 
@@ -150,43 +243,10 @@ CREATE STREAM ORDERS (
   FROM FILE '{base_path}/orders.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
-CREATE STREAM PART (
-        partkey        INT,
-        p_name         VARCHAR(55),
-        p_mfgr         CHAR(25),
-        p_brand        CHAR(10),
-        p_type         VARCHAR(25),
-        p_size         INT,
-        p_container    CHAR(10),
-        p_retailprice  DECIMAL,
-        p_comment      VARCHAR(23)
-    )
-  FROM FILE '{base_path}/part.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
-
-CREATE STREAM PARTSUPP (
-        partkey         INT,
-        suppkey         INT,
-        ps_availqty     INT,
-        ps_supplycost   DECIMAL,
-        ps_comment      VARCHAR(199)
-    )
-  FROM FILE '{base_path}/partsupp.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
-
-CREATE STREAM SUPPLIER (
-        suppkey        INT,
-        s_name         CHAR(25),
-        s_address      VARCHAR(40),
-        nationkey      INT,
-        s_phone        CHAR(15),
-        s_acctbal      DECIMAL,
-        s_comment      VARCHAR(101)
-    )
-  FROM FILE '{base_path}/supplier.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
-
-{nation_decl}
+{part_table if mode == 'static' else part_stream}
+{partsupp_table if mode == 'static' else partsupp_stream}
+{supplier_table if mode == 'static' else supplier_stream}
+{nation_table if mode == 'static' else nation_stream}
 
 SELECT n_name,
        EXTRACT(year FROM o_orderdate),

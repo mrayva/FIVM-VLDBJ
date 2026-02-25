@@ -102,6 +102,72 @@ def write_vo_files():
 
 def sql_template(mode, scale, pred_on, vo_file):
     base_path = f"./datasets/updates_{scale}_b10000_{mode}"
+
+    # Dimension tables: TABLE in static mode, STREAM in dynamic mode
+    supplier_table = f"""
+CREATE TABLE SUPPLIER (
+        suppkey        INT,
+        s_name         CHAR(25),
+        s_address      VARCHAR(40),
+        nationkey      INT,
+        s_phone        CHAR(15),
+        s_acctbal      DECIMAL,
+        s_comment      VARCHAR(101)
+    )
+  FROM FILE '{base_path}/supplier.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    supplier_stream = f"""
+CREATE STREAM SUPPLIER (
+        suppkey        INT,
+        s_name         CHAR(25),
+        s_address      VARCHAR(40),
+        nationkey      INT,
+        s_phone        CHAR(15),
+        s_acctbal      DECIMAL,
+        s_comment      VARCHAR(101)
+    )
+  FROM FILE '{base_path}/supplier.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
+    nation_table = f"""
+CREATE TABLE NATION (
+        nationkey      INT,
+        n_name         CHAR(25),
+        regionkey      INT,
+        n_comment      VARCHAR(152)
+    )
+  FROM FILE '{base_path}/nation.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    nation_stream = f"""
+CREATE STREAM NATION (
+        nationkey      INT,
+        n_name         CHAR(25),
+        regionkey      INT,
+        n_comment      VARCHAR(152)
+    )
+  FROM FILE '{base_path}/nation.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
+    region_table = f"""
+CREATE TABLE REGION (
+        regionkey      INT,
+        r_name         CHAR(25),
+        r_comment      VARCHAR(152)
+    )
+  FROM FILE '{base_path}/region.csv'
+  LINE DELIMITED CSV (delimiter := '|');
+"""
+    region_stream = f"""
+CREATE STREAM REGION (
+        regionkey      INT,
+        r_name         CHAR(25),
+        r_comment      VARCHAR(152)
+    )
+  FROM FILE '{base_path}/region.csv'
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+"""
     where_clause = (
         "WHERE   r_name = 'ASIA'\n"
         "  AND   o_orderdate >= DATE('1994-01-01')\n"
@@ -160,34 +226,9 @@ CREATE STREAM CUSTOMER (
   FROM FILE '{base_path}/customer.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
-CREATE STREAM SUPPLIER (
-        suppkey        INT,
-        s_name         CHAR(25),
-        s_address      VARCHAR(40),
-        nationkey      INT,
-        s_phone        CHAR(15),
-        s_acctbal      DECIMAL,
-        s_comment      VARCHAR(101)
-    )
-  FROM FILE '{base_path}/supplier.csv'
-  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
-
-CREATE TABLE NATION (
-        nationkey      INT,
-        n_name         CHAR(25),
-        regionkey      INT,
-        n_comment      VARCHAR(152)
-    )
-  FROM FILE '{base_path}/nation.csv'
-  LINE DELIMITED CSV (delimiter := '|');
-
-CREATE TABLE REGION (
-        regionkey      INT,
-        r_name         CHAR(25),
-        r_comment      VARCHAR(152)
-    )
-  FROM FILE '{base_path}/region.csv'
-  LINE DELIMITED CSV (delimiter := '|');
+{supplier_table if mode == 'static' else supplier_stream}
+{nation_table if mode == 'static' else nation_stream}
+{region_table if mode == 'static' else region_stream}
 
 SELECT n_name, SUM(l_extendedprice * (1 - l_discount))
 FROM customer NATURAL JOIN orders NATURAL JOIN lineitem NATURAL JOIN supplier NATURAL JOIN nation NATURAL JOIN region

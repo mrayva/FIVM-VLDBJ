@@ -35,6 +35,7 @@ CREATE STREAM ORDERS (
   FROM FILE './datasets/updates_sf1_b10000_dynamic/orders.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
+
 CREATE STREAM PART (
         partkey        INT,
         p_name         VARCHAR(55),
@@ -49,6 +50,7 @@ CREATE STREAM PART (
   FROM FILE './datasets/updates_sf1_b10000_dynamic/part.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
+
 CREATE STREAM PARTSUPP (
         partkey         INT,
         suppkey         INT,
@@ -58,6 +60,7 @@ CREATE STREAM PARTSUPP (
     )
   FROM FILE './datasets/updates_sf1_b10000_dynamic/partsupp.csv'
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
+
 
 CREATE STREAM SUPPLIER (
         suppkey        INT,
@@ -72,14 +75,14 @@ CREATE STREAM SUPPLIER (
   LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 
-CREATE TABLE NATION (
+CREATE STREAM NATION (
         nationkey      INT,
         n_name         CHAR(25),
         regionkey      INT,
         n_comment      VARCHAR(152)
     )
   FROM FILE './datasets/updates_sf1_b10000_dynamic/nation.csv'
-  LINE DELIMITED CSV (delimiter := '|');
+  LINE DELIMITED CSV (delimiter := '|', predefined_batches := 'true');
 
 
 SELECT n_name,
