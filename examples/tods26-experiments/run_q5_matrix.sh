@@ -16,6 +16,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BATCH_SIZE="${BATCH_SIZE:-10000}"
+RUN_TIMEOUT="${RUN_TIMEOUT:-1800}" # 30 min default; 0 = no timeout
 TEST_MODE="${TEST_MODE:-0}" # 1 = run only the first combo (sanity check)
 TIME_CMD="${TIME_CMD:-$(command -v time || true)}"
 
@@ -70,16 +71,22 @@ build_and_run() {
   mkdir -p "$(dirname "$log_out")"
   rm -f "$log_out"
 
-  if [[ -n "$TIME_CMD" && -x "$TIME_CMD" ]]; then
-    FIVM_BATCH_LOG="$log_out" \
-      "$TIME_CMD" -f "Elapsed: %E" \
-      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output
-  else
-    FIVM_BATCH_LOG="$log_out" \
-      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output
+  local timeout_prefix=()
+  if [[ "$RUN_TIMEOUT" -gt 0 ]]; then
+    timeout_prefix=(timeout --signal=KILL "$RUN_TIMEOUT")
   fi
 
-  echo "Log written to $log_out"
+  if "${timeout_prefix[@]}" env FIVM_BATCH_LOG="$log_out" \
+      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output; then
+    echo "Log written to $log_out"
+  else
+    local rc=$?
+    if [[ $rc -eq 137 ]]; then
+      echo "TIMEOUT after ${RUN_TIMEOUT}s — skipping $log_out"
+    else
+      echo "FAILED (exit $rc) — $log_out"
+    fi
+  fi
   echo ""
 }
 
