@@ -13,9 +13,9 @@ The `compiler` directory contains the Scala implementation of F-IVM. To compile 
 scripts/build-compiler.sh
 ```
 
-The `runtime` directory contains a C++ driver application and the runtime library header files needed to compile the generated C++ code. 
+The `runtime` directory contains a C++ driver application and the runtime library header files needed to compile the generated C++ code.
 
-Requirements: Scala 2.12, JDK 17 (older versions might also work), and g++ 6.3.0 or later.
+Requirements: Scala 2.12, JDK 17 or later, and a C++20-capable compiler.
 
 
 ## Compiling SQL queries to C++ code
@@ -32,7 +32,7 @@ Usage: sbt run [options] <SQL file>
   -l, --lang <cpp|m3>  Specify output language: cpp or m3 (default: cpp)
   --help               prints this usage text
 ```
-The `examples` directory contains example queries and datasets. 
+The `examples` directory contains example queries and datasets.
 
 To compile a SQL query into C++ code run:
 ```
@@ -53,7 +53,26 @@ The `examples` directory provides example queries using custom payload (aggregat
 ```
 cd examples
 build-examples.sh
-bin/housing/housing_regression
+bin/housing/housing_regression_app
+```
+
+See [`examples/README.md`](/home/mrayva/FIVM-VLDBJ/examples/README.md) for a guide to the examples layout, input SQL structure, dataset preparation, and variable-order `.txt` files.
+
+The checked-in housing examples read from `examples/datasets/housing-4-normalised`. The simple examples under `examples/queries/simple` use the checked-in dataset in `examples/datasets/simple`.
+
+For offline runtime development, configure CMake without the fetched zerialize dependency:
+```
+cmake -S runtime -B build/runtime -DFIVM_ENABLE_ZERIALIZE=OFF -DFIVM_BUILD_TESTS=OFF
+```
+
+For a single-command end-to-end check of the verified housing path, run:
+```
+scripts/smoke-housing.sh
+```
+
+For a single top-level verification run covering compiler tests, offline runtime tests, and the housing smoke test, run:
+```
+make verify
 ```
 
 ## Custom rings

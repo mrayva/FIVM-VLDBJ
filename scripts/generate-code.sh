@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 FIVM_VERSION=1.1
 SCALA_VERSION=2.12
@@ -10,6 +11,12 @@ COMPILER_BIN=${COMPILER_DIR}/target/scala-${SCALA_VERSION}/FIVM-assembly-${FIVM_
 if [ ! -f ${COMPILER_BIN} ]
 then
     ${SCRIPTS_DIR}/build-compiler.sh
+fi
+
+if [ ! -f ${COMPILER_BIN} ]
+then
+    echo "Compiler assembly not found: ${COMPILER_BIN}" >&2
+    exit 1
 fi
 
 java -jar $COMPILER_BIN $@

@@ -8,6 +8,9 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <optional>
+#include <sstream>
 #include <thread>
 #include <chrono>
 #include <vector>
@@ -223,16 +226,43 @@ void Application::createDataSources() {
 }
 
 void Application::preloadDataSources(size_t batch_size) {
+  std::mutex error_mutex;
+  std::optional<std::string> producer_error;
+
   // Create producers, one per data source
   std::vector<std::thread> static_producers;
   for (auto& p : static_sources) {
-    static_producers.emplace_back(
-        [&p, batch_size]() { dataProducer(p, batch_size); });
+    static_producers.emplace_back([&p, batch_size, &error_mutex,
+                                   &producer_error]() {
+      try {
+        dataProducer(p, batch_size);
+      } catch (const std::exception& e) {
+        std::lock_guard<std::mutex> lock(error_mutex);
+        if (!producer_error.has_value()) {
+          std::ostringstream oss;
+          oss << "Failed to preload data source '" << p.cfg.name << "' from '"
+              << p.cfg.uri << "': " << e.what();
+          producer_error = oss.str();
+        }
+      }
+    });
   }
   std::vector<std::thread> dynamic_producers;
   for (auto& p : dynamic_sources) {
-    dynamic_producers.emplace_back(
-        [&p, batch_size]() { dataProducer(p, batch_size); });
+    dynamic_producers.emplace_back([&p, batch_size, &error_mutex,
+                                    &producer_error]() {
+      try {
+        dataProducer(p, batch_size);
+      } catch (const std::exception& e) {
+        std::lock_guard<std::mutex> lock(error_mutex);
+        if (!producer_error.has_value()) {
+          std::ostringstream oss;
+          oss << "Failed to preload data source '" << p.cfg.name << "' from '"
+              << p.cfg.uri << "': " << e.what();
+          producer_error = oss.str();
+        }
+      }
+    });
   }
 
   for (auto& t : static_producers)
@@ -240,6 +270,10 @@ void Application::preloadDataSources(size_t batch_size) {
 
   for (auto& t : dynamic_producers)
     if (t.joinable()) t.join();
+
+  if (producer_error.has_value()) {
+    throw std::runtime_error(*producer_error);
+  }
 }
 
 void Application::resetDataSources() {

@@ -53,7 +53,7 @@ fi
 # --------------------------------------------------
 
 CXX=${CXX:-g++}
-CXXFLAGS="-O3 -DNDEBUG -Wall -Wno-unused-variable -std=c++17 -pedantic"
+CXXFLAGS="-O3 -DNDEBUG -Wall -Wno-unused-variable -std=c++20 -pedantic"
 INCLUDES="-I ${RUNTIME_DIR}/include -I ${RUNTIME_DIR}/include/dbtoaster"
 
 APP_INCLUDE=${APP_INCLUDE:-"$RUNTIME_DIR/include/application_base.hpp"}

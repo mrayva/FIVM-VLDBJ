@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,31 @@ struct DataSourceConfig {
   DispatchFn callback = nullptr;
 };
 
+inline const char* primitive_type_name(PrimitiveType type) {
+  switch (type) {
+    case PrimitiveType::INT8:
+      return "int8";
+    case PrimitiveType::INT16:
+      return "int16";
+    case PrimitiveType::INT32:
+      return "int32";
+    case PrimitiveType::INT64:
+      return "int64";
+    case PrimitiveType::FLOAT:
+      return "float";
+    case PrimitiveType::DOUBLE:
+      return "double";
+    case PrimitiveType::CHAR:
+      return "char";
+    case PrimitiveType::STRING:
+      return "string";
+    case PrimitiveType::DATE:
+      return "date";
+  }
+
+  return "unknown";
+}
+
 // ---------------------------------------------------------------------------
 struct ColumnBase {
  public:
@@ -62,7 +88,7 @@ struct ColumnBase {
 
   PrimitiveType type() const { return type_; }
 
-  virtual void append_from_string(const std::string&) = 0;
+  virtual void append_from_string(const std::string&, const std::string&) = 0;
   virtual size_t size() const = 0;
 
  protected:
@@ -129,8 +155,16 @@ struct Column : public ColumnBase {
 
   Column(PrimitiveType t, size_t sz = 0) : ColumnBase(t) { data.reserve(sz); }
 
-  void append_from_string(const std::string& s) override {
-    data.push_back(parse<T>(s));
+  void append_from_string(const std::string& s,
+                          const std::string& field_name) override {
+    try {
+      data.push_back(parse<T>(s));
+    } catch (const std::exception& e) {
+      throw std::invalid_argument("Invalid " +
+                                  std::string(primitive_type_name(type_)) +
+                                  " value for column '" + field_name + "': '" +
+                                  s + "' (" + e.what() + ")");
+    }
   }
 
   size_t size() const override { return data.size(); }
