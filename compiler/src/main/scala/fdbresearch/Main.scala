@@ -22,30 +22,38 @@ object Main extends App {
                     language: String = "cpp", 
                     outputFile: Option[String] = None)
 
-  val parser = new scopt.OptionParser[Config]("sbt run") {
-    override def showUsageOnError = true
+  private val builder = scopt.OParser.builder[Config]
 
-    head("F-IVM", "1.1")
+  val parser = {
+    import builder._
+    scopt.OParser.sequence(
+      programName("sbt run"),
+      head("F-IVM", "1.1"),
 
-    arg[String]("<SQL file>").required().action((x, c) =>
-      c.copy(inputSQL = x)).text("Input SQL file")
+      arg[String]("<SQL file>").required().action((x, c) =>
+        c.copy(inputSQL = x)).text("Input SQL file"),
 
-    opt[String]('o', "output").valueName("<file>").action((x, c) =>
-      c.copy(outputFile = Some(x))).text("Output file")
+      opt[String]('o', "output").valueName("<file>").action((x, c) =>
+        c.copy(outputFile = Some(x))).text("Output file"),
 
-    opt[String]('l', "lang").optional().valueName("<cpp|m3>").validate {
-        case "cpp" | "m3" => Right(())
-        case other => Left(s"Invalid language: $other. Allowed: cpp, m3")
-      }.action((x, c) => 
-        c.copy(language = x)).text("Specify output language: cpp or m3 (default: cpp)")
+      opt[String]('l', "lang").optional().valueName("<cpp|m3>").validate {
+          case "cpp" | "m3" => Right(())
+          case other => Left(s"Invalid language: $other. Allowed: cpp, m3")
+        }.action((x, c) =>
+          c.copy(language = x)).text("Specify output language: cpp or m3 (default: cpp)"),
 
-    // opt[Unit]("batch").action((_, c) =>
-    //   c.copy(batchUpdates = true)).text("Generate batch update triggers")
+      // opt[Unit]("batch").action((_, c) =>
+      //   c.copy(batchUpdates = true)).text("Generate batch update triggers"),
 
-    // opt[Unit]("single").action((_, c) =>
-    //   c.copy(batchUpdates = false)).text("Generate single-tuple update triggers")
+      // opt[Unit]("single").action((_, c) =>
+      //   c.copy(batchUpdates = false)).text("Generate single-tuple update triggers"),
 
-    help("help").text("prints this usage text")
+      help("help").text("prints this usage text")
+    )
+  }
+
+  private val parserSetup: scopt.OParserSetup = new scopt.DefaultOParserSetup {
+    override def showUsageOnError = Some(true)
   }
 
   def parseSQL(f: File) = {
@@ -80,7 +88,7 @@ object Main extends App {
     case None => println(s)
   }
 
-  parser.parse(args, Config()) match {
+  scopt.OParser.parse(parser, args, Config(), parserSetup) match {
     case Some(config) =>
       val sqlFile = new File(config.inputSQL)
       val sql = parseSQL(sqlFile)

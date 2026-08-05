@@ -13,7 +13,9 @@ import org.slf4j.LoggerFactory
 
 object Logger {
 
-  System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "INFO")
+  // slf4j-simple 2.x moved SimpleLogger from org.slf4j.impl to org.slf4j.simple
+  // and switched binding discovery to ServiceLoader (org.slf4j.spi.SLF4JServiceProvider).
+  System.setProperty(org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "INFO")
 
   val instance = LoggerFactory.getLogger("fdbresearch.fivm")
 }
