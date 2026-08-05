@@ -119,4 +119,23 @@ class CompilerRegressionSpec extends AnyFunSuite {
     assert(err.getMessage != null)
     assert(err.getMessage.toLowerCase.contains("no root") || err.getMessage.toLowerCase.contains("none.get"))
   }
+
+  test("variable order input referencing an undeclared key fails with a clear error") {
+    val parser = new VariableOrderParser()
+    // Variable 0 (A) references key id 99, which is never declared.
+    val malformed =
+      """1 1
+        |0 A int -1 {99} 0
+        |R 0 A
+        |""".stripMargin
+
+    val err = intercept[RuntimeException] {
+      parser.apply(malformed)
+    }
+
+    assert(err.getMessage != null)
+    // Previously this threw a bare NoSuchElementException ("None.get")
+    // instead of a message naming the missing reference.
+    assert(err.getMessage.contains("referenced before it was declared"))
+  }
 }

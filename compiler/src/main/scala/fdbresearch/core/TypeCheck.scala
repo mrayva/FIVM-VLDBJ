@@ -87,7 +87,10 @@ object TypeCheck extends (M3.System => M3.System) {
   //    converting to lower case
   def renameVarsAndFuns (vn: String => String, fn: String => String) (s0: System) = {
     val globalMaps = s0.maps.map(_.name).toSet
-    var localMapRenaming: Map[String, String] = null
+    // Populated per-trigger below; renameExpr also runs over s0.queries,
+    // which are processed outside that loop, so this must never be null
+    // (an empty map means "no local renaming applies yet").
+    var localMapRenaming: Map[String, String] = Map.empty
 
     def renameKeys(keys: List[(String, Type)]) = 
       keys.map { case (n, t) => (vn(n), t) }

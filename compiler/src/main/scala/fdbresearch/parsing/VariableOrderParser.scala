@@ -36,11 +36,19 @@ class VariableOrderParser extends Parser with (String => Tree[VariableOrderNode]
 
   private val variableMap = collection.mutable.Map[String, Option[VariableOrderVar]]().withDefaultValue(None)
 
+  // Look up a variable id/name that must have already been declared earlier
+  // in the DTree file (parent/key references only point backwards). Using
+  // `.get` directly here used to throw a bare NoSuchElementException on a
+  // forward reference or typo; report which reference is missing instead.
+  private def resolveVar(ref: String): VariableOrderVar =
+    variableMap(ref).getOrElse(
+      sys.error(s"DTree parse error: '$ref' referenced before it was declared"))
+
   private lazy val variable: Parser[LinkedNode] =
     intLit ~ ident ~ tpe ~ intLit ~ ("{" ~> repsep(intLit, ",") <~ "}") ~ intLit ^^ {
       case id ~ name ~ tp ~ parentId ~ keyIds ~ cache =>
         val parent = variableMap(parentId)
-        val keys = keyIds.map(k => variableMap(k).get)
+        val keys = keyIds.map(resolveVar)
         val v = VariableOrderVar(name, tp)
         variableMap += (id -> Some(v), name -> Some(v))
         new LinkedNode(v, parent)
@@ -50,7 +58,7 @@ class VariableOrderParser extends Parser with (String => Tree[VariableOrderNode]
     ident ~ intLit ~ repsep(ident, ",") ^^ {
       case name ~ parentId ~ vars =>
         val parent = variableMap(parentId)
-        val keys = vars.map(k => variableMap(k).get)
+        val keys = vars.map(resolveVar)
         val r = VariableOrderRelation(name, keys)
         new LinkedNode(r, parent)
     }
