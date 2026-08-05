@@ -122,7 +122,7 @@ build_and_run() {
   fi
 
   # Run binary (without --no-output so we get the query result on stdout)
-  "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" > "$output_file" 2>/dev/null
+  "$bin_out" --num-runs 1 --batch-size "$BATCH_SIZE" > "$output_file" 2>/dev/null
 
   return 0
 }

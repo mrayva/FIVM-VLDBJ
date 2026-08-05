@@ -73,10 +73,10 @@ build_and_run() {
   if [[ -n "$TIME_CMD" && -x "$TIME_CMD" ]]; then
     FIVM_BATCH_LOG="$log_out" \
       "$TIME_CMD" -f "Elapsed: %E" \
-      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output
+      "$bin_out" --num-runs 1 --batch-size "$BATCH_SIZE" --no-output
   else
     FIVM_BATCH_LOG="$log_out" \
-      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output
+      "$bin_out" --num-runs 1 --batch-size "$BATCH_SIZE" --no-output
   fi
 
   echo "Log written to $log_out"

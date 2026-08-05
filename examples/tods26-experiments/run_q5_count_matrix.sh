@@ -76,7 +76,7 @@ build_and_run() {
   fi
 
   if "${timeout_prefix[@]}" env FIVM_BATCH_LOG="$log_out" \
-      "$bin_out" --num_runs 1 --batch-size "$BATCH_SIZE" --no-output; then
+      "$bin_out" --num-runs 1 --batch-size "$BATCH_SIZE" --no-output; then
     echo "Log written to $log_out"
   else
     local rc=$?
