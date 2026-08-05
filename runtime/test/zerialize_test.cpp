@@ -43,11 +43,11 @@ TEST(SPSCQueueTest, FullQueue) {
 
 TEST(MPSCQueueTest, PushPop) {
     MPSCQueue<int> queue;
-    
+
     queue.push(1);
     queue.push(2);
     queue.push(3);
-    
+
     int value;
     EXPECT_TRUE(queue.try_pop(value));
     EXPECT_EQ(value, 1);
@@ -56,6 +56,27 @@ TEST(MPSCQueueTest, PushPop) {
     EXPECT_TRUE(queue.try_pop(value));
     EXPECT_EQ(value, 3);
     EXPECT_FALSE(queue.try_pop(value));
+}
+
+// Regression test: the destructor used to walk from head_ (the newest node,
+// whose ->next is always null) instead of tail_, so it deleted exactly one
+// node and leaked every other un-popped node. Destroying a queue with
+// pending items should free all of them -- verified under
+// AddressSanitizer/LeakSanitizer in CI, not by an in-process assertion.
+TEST(MPSCQueueTest, DestructorFreesUnpoppedNodes) {
+    {
+        MPSCQueue<std::vector<uint8_t>> queue;
+        queue.push(std::vector<uint8_t>(64, 0xAB));
+        queue.push(std::vector<uint8_t>(64, 0xCD));
+        queue.push(std::vector<uint8_t>(64, 0xEF));
+        // Intentionally destroyed here without draining.
+    }
+    SUCCEED();
+}
+
+TEST(MPSCQueueTest, DestructorOnEmptyQueueIsSafe) {
+    { MPSCQueue<int> queue; }
+    SUCCEED();
 }
 
 // Test Message struct

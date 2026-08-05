@@ -10,6 +10,7 @@
 #ifndef DBTOASTER_STRING_HPP
 #define DBTOASTER_STRING_HPP
 
+#include <atomic>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -322,6 +323,19 @@ struct PooledRefCountedString {
   uint64_t size_;
   char* data_;
 
+  // ptr_count_ is shared between copies that may live on different threads
+  // (e.g. a chunk crossing the concurrent-ingestion queues), so all mutation
+  // of *ptr_count_ must go through std::atomic_ref rather than plain ++/--.
+  static inline void inc_count(uint64_t* c) noexcept {
+    std::atomic_ref<uint64_t>(*c).fetch_add(1, std::memory_order_relaxed);
+  }
+
+  // Returns true if this decrement dropped the count to zero (i.e. the
+  // caller is releasing the last reference and owns the pooled slot/buffer).
+  static inline bool dec_count(uint64_t* c) noexcept {
+    return std::atomic_ref<uint64_t>(*c).fetch_sub(1, std::memory_order_acq_rel) == 1;
+  }
+
   // default
   PooledRefCountedString() {
     ptr_count_ = pool.add();
@@ -353,7 +367,7 @@ struct PooledRefCountedString {
     ptr_count_ = other.ptr_count_;
     size_ = other.size_;
     data_ = other.data_;
-    (*ptr_count_)++;
+    inc_count(ptr_count_);
   }
 
   // move constructor
@@ -367,7 +381,7 @@ struct PooledRefCountedString {
   }
 
   ~PooledRefCountedString() {
-    if (ptr_count_ && (--(*ptr_count_)) == 0) {
+    if (ptr_count_ && dec_count(ptr_count_)) {
       pool.del(ptr_count_);
       delete[] data_;
     }
@@ -375,7 +389,7 @@ struct PooledRefCountedString {
 
   // assign from C string
   PooledRefCountedString& operator=(const char* str) {
-    if (ptr_count_ && (--(*ptr_count_)) == 0) {
+    if (ptr_count_ && dec_count(ptr_count_)) {
       delete[] data_;
       *ptr_count_ = 1;  // re-use ptr_count_
     } else {

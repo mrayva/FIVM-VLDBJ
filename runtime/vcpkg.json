@@ -3,6 +3,7 @@
   "version-string": "1.1.0",
   "description": "FIVM Runtime - Factorized Incremental View Maintenance",
   "homepage": "https://github.com/mrayva/FIVM-VLDBJ",
+  "builtin-baseline": "39344dff01c5a5a0134caf2624cdd492f05d30ea",
   "dependencies": [
     "flatbuffers",
     "msgpack",

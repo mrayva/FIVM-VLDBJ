@@ -86,9 +86,16 @@ public:
                 break;
             }
 
-            // Check relation matches (or accept all if not specified)
+            // Check relation matches (or accept all if not specified).
+            // A queue is single-consumer (SPSC/MPSC), so this adaptor is the
+            // only reader of it: a mismatch here means the message was
+            // mistagged or this adaptor is wired to the wrong queue, and the
+            // popped message cannot be handed to any other consumer. Count
+            // it so misconfiguration is observable instead of silently
+            // losing rows.
             if (!cfg_.name.empty() && msg.relation != cfg_.name) {
-                continue;  // Skip messages for other relations
+                ++dropped_relation_mismatch_;
+                continue;
             }
 
             // Deserialize based on format
@@ -124,6 +131,13 @@ public:
     /// Get the data source configuration
     const DataSourceConfig& config() const { return cfg_; }
 
+    /// Number of messages popped from the queue but dropped because their
+    /// relation didn't match cfg_.name (see next()). Non-zero indicates a
+    /// misconfigured queue/adaptor pairing or a mistagged producer.
+    size_t dropped_relation_mismatch_count() const {
+        return dropped_relation_mismatch_;
+    }
+
 private:
     DataSourceConfig cfg_;
     MessageQueuePtr spsc_queue_;
@@ -131,6 +145,7 @@ private:
     size_t batch_size_;
     std::atomic<bool> closed_;
     std::vector<FieldMapping> field_mappings_;
+    size_t dropped_relation_mismatch_ = 0;
 
     /// Build field mappings from schema
     void build_field_mappings() {

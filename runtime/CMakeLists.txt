@@ -26,11 +26,14 @@ find_package(msgpack-cxx CONFIG QUIET)  # Optional, for msgpack-c
 # -----------------------------------------------------------------------------
 if(FIVM_ENABLE_ZERIALIZE)
     include(FetchContent)
+    # Pinned to a commit (not a floating branch) for reproducible builds.
+    # zerialize has no tagged releases, so a commit SHA is the closest thing
+    # to a version; bump this deliberately, don't track a branch HEAD.
     FetchContent_Declare(
         zerialize
-        GIT_REPOSITORY https://github.com/colinator/zerialize.git
-        GIT_TAG        main
-        GIT_SHALLOW    TRUE
+        GIT_REPOSITORY https://github.com/mrayva/zerialize.git
+        GIT_TAG        32d9d9447c9ce725ba0ea9d1a5d25005066a0cd8
+        GIT_SHALLOW    FALSE
     )
     FetchContent_MakeAvailable(zerialize)
 endif()
@@ -89,6 +92,25 @@ if(FIVM_BUILD_TESTS)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
     )
     add_test(NAME csv_reader_test COMMAND csv_reader_test)
+
+    find_package(Threads REQUIRED)
+    add_executable(string_test
+        test/string_test.cpp
+    )
+    target_link_libraries(string_test
+        PRIVATE
+            fivm::runtime
+            GTest::gtest
+            GTest::gtest_main
+            Threads::Threads
+    )
+    if(CXXABI_LIBRARY)
+        target_link_libraries(string_test PRIVATE ${CXXABI_LIBRARY})
+    endif()
+    set_target_properties(string_test PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+    )
+    add_test(NAME string_test COMMAND string_test)
 
     if(FIVM_ENABLE_ZERIALIZE)
     add_executable(zerialize_test

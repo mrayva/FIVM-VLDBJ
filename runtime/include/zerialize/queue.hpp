@@ -114,12 +114,15 @@ public:
     MPSCQueue() : head_(new Node()), tail_(head_.load()) {}
 
     ~MPSCQueue() {
-        // Drain remaining nodes
-        while (Node* node = head_.load()) {
-            Node* next = node->next.load();
+        // Walk from tail_ (oldest / consumer-owned dummy) forward to head_
+        // (newest), deleting every node. head_->next is always nullptr, so
+        // starting from head_ only ever frees that one node and leaks the
+        // rest of the chain; tail_ is the correct traversal start.
+        Node* node = tail_;
+        while (node) {
+            Node* next = node->next.load(std::memory_order_relaxed);
             delete node;
-            if (!next) break;
-            head_.store(next);
+            node = next;
         }
     }
 
